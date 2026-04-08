@@ -46,6 +46,7 @@ const APPLICANT_NAV = [
   {
     title: null,
     items: [
+      { label: 'CodeX Hub',    to: '/codexhub/students', Icon: GraduationCap },
       { label: 'My Profile',    to: '/profile',          Icon: CircleUser },
       { label: 'Jobs',          to: '/jobs',              Icon: ClipboardList },
       { label: 'My Applications', to: '/job-applications', Icon: FileText },

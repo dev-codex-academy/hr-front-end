@@ -20,7 +20,10 @@ import PerformancePage from '@/pages/performance/PerformancePage'
 import SkillsPage from '@/pages/skills/SkillsPage'
 import EducationPage from '@/pages/education/EducationPage'
 import NotificationsPage from '@/pages/notifications/NotificationsPage'
-import ProfilePage from '@/pages/profile/ProfilePage'
+import ProfileGate from '@/pages/profile/ProfileGate'
+import StudentsPage from '@/pages/codexhub/StudentsPage'
+import CodexHubProfilePage from '@/pages/codexhub/CodexHubProfilePage'
+import StudentJobsPage from '@/pages/codexhub/StudentJobsPage'
 
 export default function AppRouter() {
   return (
@@ -49,7 +52,10 @@ export default function AppRouter() {
         <Route path="/interviews" element={<InterviewsPage />} />
         <Route path="/time-off" element={<TimeOffPage />} />
         <Route path="/performance" element={<PerformancePage />} />
-        <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/profile" element={<ProfileGate />} />
+        <Route path="/codexhub/students" element={<StudentsPage />} />
+        <Route path="/codexhub/jobs" element={<StudentJobsPage />} />
+        <Route path="/codexhub/profile" element={<CodexHubProfilePage />} />
         <Route path="/skills" element={<SkillsPage />} />
         <Route path="/education" element={<EducationPage />} />
         <Route path="/notifications" element={<NotificationsPage />} />

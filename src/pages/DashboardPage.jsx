@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import {
   Users, Briefcase, FileText, Video,
-  Clock, TrendingUp, ArrowRight, CircleUser,
+  Clock, TrendingUp, ArrowRight, CircleUser, Calendar, CheckCircle2, Bell, GraduationCap,
 } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
 import employeeService       from '@/services/employeeService'
@@ -23,6 +23,7 @@ const QUICK_ACTIONS = [
   { label: 'Review Applications',      to: '/job-applications', Icon: FileText,   iconBg: '#4E89BD' },
   { label: 'Schedule an Interview',    to: '/interviews',       Icon: Video,      iconBg: '#E06C75' },
   { label: 'Manage Time Off Requests', to: '/time-off',         Icon: Clock,      iconBg: '#3d6e98' },
+  { label: 'Open CodeX Hub',           to: '/codexhub/students', Icon: GraduationCap, iconBg: '#E06C75' },
 ]
 
 const MODULES = [
@@ -33,13 +34,18 @@ const MODULES = [
   { label: 'Performance Reviews',     Icon: TrendingUp, iconBg: '#E06C75' },
 ]
 
+
+
 function StatCard({ label, value, Icon, iconBg, bar, to, loading }) {
   const num = value ?? 0
   const pct = Math.min(100, Math.round((num / 200) * 100))
   return (
-    <Link to={to} className="stat-card">
-      <div className="stat-card-icon" style={{ background: iconBg }}>
-        <Icon strokeWidth={2} />
+    <Link to={to} className="stat-card stat-card-revamp">
+      <div className="stat-card-top">
+        <div className="stat-card-icon" style={{ background: iconBg }}>
+          <Icon strokeWidth={2} />
+        </div>
+        {/* Status chip removed for now */}
       </div>
       <p className="stat-card-label">{label}</p>
       {loading
@@ -47,9 +53,9 @@ function StatCard({ label, value, Icon, iconBg, bar, to, loading }) {
         : <p className="stat-card-value">{num.toLocaleString()}</p>
       }
       <div className="stat-card-footer">
-        <span className="stat-card-link-text">
-          View all <ArrowRight />
-        </span>
+        <button className="stat-card-cta" type="button">
+          View details <ArrowRight />
+        </button>
         <div className="stat-card-bar-track">
           <div
             className="stat-card-bar-fill"
@@ -73,6 +79,22 @@ function ActionRow({ label, to, Icon, iconBg }) {
   )
 }
 
+function ActionTile({ label, to, Icon, iconBg }) {
+  return (
+    <Link to={to} className="action-tile">
+      <div className="action-tile-icon" style={{ background: iconBg }}>
+        <Icon strokeWidth={2} />
+      </div>
+      <div className="action-tile-body">
+        <span className="action-tile-label">{label}</span>
+        <span className="action-tile-link">
+          Go <ArrowRight />
+        </span>
+      </div>
+    </Link>
+  )
+}
+
 function ModuleRow({ label, Icon, iconBg }) {
   return (
     <div className="module-row">
@@ -91,7 +113,7 @@ export default function DashboardPage() {
   // Redirect applicants (no group, not staff) straight to their profile
   useEffect(() => {
     if (user && !user.is_staff && (!user.groups || user.groups.length === 0)) {
-      navigate('/profile', { replace: true })
+      navigate('/codexhub/students', { replace: true })
     }
   }, [user, navigate])
 
@@ -131,74 +153,65 @@ export default function DashboardPage() {
   })
 
   return (
-    <div className="dashboard">
-      {/* Welcome Banner */}
-      <div
-        className="dashboard-banner"
-        style={{ background: 'linear-gradient(135deg, #4E89BD 0%, #61AFEE 100%)' }}
-      >
-        {/* mesh overlay */}
-        <div style={{
-          position: 'absolute', inset: 0, pointerEvents: 'none',
-          backgroundImage: [
-            'linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px)',
-            'linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px)',
-          ].join(', '),
-          backgroundSize: '28px 28px',
-        }} />
-        {/* glow circles */}
-        <div style={{ position:'absolute', right:0, top:0, width:'280px', height:'100%', overflow:'hidden', pointerEvents:'none' }}>
-          <div style={{ position:'absolute', right:'-40px', top:'-40px', width:'200px', height:'200px', borderRadius:'50%', background:'rgba(255,255,255,0.05)' }} />
-          <div style={{ position:'absolute', right:'32px', bottom:'-20px', width:'140px', height:'140px', borderRadius:'50%', background:'rgba(255,255,255,0.05)' }} />
-        </div>
-        <div style={{ position: 'relative' }}>
-          <p className="dashboard-banner-date">{today}</p>
-          <h2 className="dashboard-banner-title">Welcome back, {name}!</h2>
-          <p className="dashboard-banner-sub">Here's a quick snapshot of your HR operations today.</p>
-        </div>
-      </div>
-
-      <div className="dashboard-body">
-        {/* Stat Cards */}
-        <div className="stat-cards-grid">
-          {STAT_CARDS.map(({ key, label, Icon, iconBg, bar, to }) => (
-            <StatCard
-              key={key}
-              label={label}
-              value={stats[key]}
-              Icon={Icon}
-              iconBg={iconBg}
-              bar={bar}
-              to={to}
-              loading={loading}
-            />
-          ))}
-        </div>
-
-        {/* Bottom row */}
-        <div className="bottom-grid">
-          {/* Quick Actions */}
-          <div className="panel">
-            <div className="panel-header">
-              <TrendingUp />
-              <h3 className="panel-title">Quick Actions</h3>
-            </div>
-            {QUICK_ACTIONS.map((a) => (
+    <div className="dashboard dashboard-revamp">
+      {/* Header */}
+      <div className="dash-header">
+        <div className="dash-hero">
+          <div className="dash-hero-top">
+            <span className="dash-date">{today}</span>
+            <span className="dash-pill">Live</span>
+          </div>
+          <h2 className="dash-title">Welcome back, {name}!</h2>
+          <p className="dash-sub">Here’s your HR command center — hiring, people, and performance at a glance.</p>
+          <div className="dash-hero-actions">
+            {[QUICK_ACTIONS[0], QUICK_ACTIONS[2], QUICK_ACTIONS[3]].map((a) => (
               <ActionRow key={a.to} {...a} />
             ))}
           </div>
+        </div>
+      </div>
 
-          {/* HR Modules */}
-          <div className="panel">
-            <div className="panel-header">
-              <FileText />
-              <h3 className="panel-title">HR Modules</h3>
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginTop: '4px' }}>
-              {MODULES.map((m) => (
-                <ModuleRow key={m.label} {...m} />
-              ))}
-            </div>
+      {/* Stat Cards */}
+      <div className="dash-stats">
+        {STAT_CARDS.map(({ key, label, Icon, iconBg, bar, to }) => (
+          <StatCard
+            key={key}
+            label={label}
+            value={stats[key]}
+            Icon={Icon}
+            iconBg={iconBg}
+            bar={bar}
+            to={to}
+            loading={loading}
+          />
+        ))}
+      </div>
+
+      
+
+      {/* Bottom row */}
+      <div className="dash-grid">
+        <div className="dash-panel">
+          <div className="dash-panel-header">
+            <TrendingUp />
+            <h3>Quick Actions</h3>
+          </div>
+          <div className="dash-actions-grid">
+            {QUICK_ACTIONS.map((a) => (
+              <ActionTile key={a.to} {...a} />
+            ))}
+          </div>
+        </div>
+
+        <div className="dash-panel">
+          <div className="dash-panel-header">
+            <FileText />
+            <h3>HR Modules</h3>
+          </div>
+          <div className="dash-module-list">
+            {MODULES.map((m) => (
+              <ModuleRow key={m.label} {...m} />
+            ))}
           </div>
         </div>
       </div>
