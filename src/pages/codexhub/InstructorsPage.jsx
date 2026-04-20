@@ -3,25 +3,28 @@ import {
   GraduationCap, Users, X, MapPin, Mail, Calendar,
   BookOpen, ExternalLink, Award, Star,
 } from 'lucide-react'
+import { Link } from 'react-router-dom'
 import instructorService from '@/services/instructorService'
+import { SectionHeading } from './components/SectionHeading'
+import './CodexHubWideLayout.css'
+import './InstructorsPage.css'
 
 const ROLE_CONFIG = {
-  'Instructor':         { label: 'Teacher',            color: '#7C3AED', bg: '#EDE9FE', accent: 'linear-gradient(135deg,#7C3AED,#6D28D9)' },
+  Instructor: { label: 'Teacher', color: '#7C3AED', bg: '#EDE9FE', accent: 'linear-gradient(135deg,#7C3AED,#6D28D9)' },
   'Teaching Assistant': { label: 'Teaching Assistant', color: '#059669', bg: '#D1FAE5', accent: 'linear-gradient(135deg,#059669,#047857)' },
 }
 
 const SKILL_LEVEL_COLOR = {
-  expert:       { color: '#7C3AED', bg: '#EDE9FE' },
-  advanced:     { color: '#1D4ED8', bg: '#DBEAFE' },
+  expert: { color: '#7C3AED', bg: '#EDE9FE' },
+  advanced: { color: '#1D4ED8', bg: '#DBEAFE' },
   intermediate: { color: '#065F46', bg: '#D1FAE5' },
-  beginner:     { color: '#92400E', bg: '#FEF3C7' },
+  beginner: { color: '#92400E', bg: '#FEF3C7' },
 }
 
-/* ── Avatar — photo or initials ───────────────────────────────── */
 function Avatar({ person, size = 52, fontSize = 18 }) {
   const [imgError, setImgError] = useState(false)
   const initials = ((person.first_name?.[0] ?? '') + (person.last_name?.[0] ?? '')).toUpperCase()
-  const role     = ROLE_CONFIG[person.position_title]
+  const role = ROLE_CONFIG[person.position_title]
 
   if (person.photo_url && !imgError) {
     return (
@@ -33,30 +36,42 @@ function Avatar({ person, size = 52, fontSize = 18 }) {
       />
     )
   }
+
   return (
-    <div style={{
-      width: size, height: size, borderRadius: '50%', flexShrink: 0,
-      background: role?.accent ?? 'linear-gradient(135deg,#3d6e98,#4E89BD)',
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      fontSize, fontWeight: 800, color: 'white',
-      border: '3px solid rgba(255,255,255,0.3)',
-    }}>
+    <div
+      style={{
+        width: size,
+        height: size,
+        borderRadius: '50%',
+        flexShrink: 0,
+        background: role?.accent ?? 'linear-gradient(135deg,#3d6e98,#4E89BD)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontSize,
+        fontWeight: 800,
+        color: 'white',
+        border: '3px solid rgba(255,255,255,0.3)',
+      }}
+    >
       {initials}
     </div>
   )
 }
 
-/* ── Profile Modal ────────────────────────────────────────────── */
 function ProfileModal({ person, onClose }) {
-  const role     = ROLE_CONFIG[person.position_title] ?? { label: person.position_title ?? 'Staff', color: '#4E89BD', bg: '#EFF6FF', accent: 'linear-gradient(135deg,#3d6e98,#4E89BD)' }
+  const role = ROLE_CONFIG[person.position_title] ?? {
+    label: person.position_title ?? 'Staff',
+    color: '#4E89BD',
+    bg: '#EFF6FF',
+    accent: 'linear-gradient(135deg,#3d6e98,#4E89BD)',
+  }
   const hireYear = person.hire_date ? new Date(person.hire_date).getFullYear() : null
-  const skills   = person.skills ?? []
+  const skills = person.skills ?? []
 
   return (
     <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 50, background: 'rgba(0,0,0,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px', backdropFilter: 'blur(2px)' }}>
       <div onClick={e => e.stopPropagation()} style={{ background: 'white', borderRadius: '20px', width: '100%', maxWidth: '480px', boxShadow: '0 24px 64px rgba(0,0,0,0.3)', overflow: 'hidden' }}>
-
-        {/* Header */}
         <div style={{ background: 'linear-gradient(135deg,#1e3a5f 0%,#3d6e98 50%,#4E89BD 100%)', padding: '28px 24px 24px', position: 'relative' }}>
           <button onClick={onClose} style={{ position: 'absolute', top: '14px', right: '14px', background: 'rgba(255,255,255,0.15)', border: 'none', borderRadius: '50%', width: '30px', height: '30px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white' }}>
             <X size={15} />
@@ -77,10 +92,7 @@ function ProfileModal({ person, onClose }) {
           </div>
         </div>
 
-        {/* Body */}
         <div style={{ padding: '22px 24px' }}>
-
-          {/* Info rows */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '20px' }}>
             {person.position_title && <InfoRow Icon={BookOpen} label="Role" value={person.position_title} />}
             {(person.city || person.state) && (
@@ -90,18 +102,23 @@ function ProfileModal({ person, onClose }) {
             {person.email && <InfoRow Icon={Mail} label="Email" value={person.email} href={`mailto:${person.email}`} />}
           </div>
 
-          {/* Calendly CTA */}
           {person.calendly_url && (
             <a
               href={person.calendly_url}
               target="_blank"
               rel="noreferrer"
               style={{
-                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
                 background: 'linear-gradient(135deg,#006BFF,#0052CC)',
-                color: 'white', textDecoration: 'none',
-                borderRadius: '10px', padding: '11px 16px',
-                fontSize: '14px', fontWeight: 700,
+                color: 'white',
+                textDecoration: 'none',
+                borderRadius: '10px',
+                padding: '11px 16px',
+                fontSize: '14px',
+                fontWeight: 700,
                 boxShadow: '0 4px 12px rgba(0,107,255,0.3)',
                 marginBottom: '20px',
                 transition: 'opacity 0.15s',
@@ -115,7 +132,6 @@ function ProfileModal({ person, onClose }) {
             </a>
           )}
 
-          {/* Skills */}
           {skills.length > 0 && (
             <div>
               <p style={{ fontSize: '11px', fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '10px' }}>Skills</p>
@@ -154,11 +170,15 @@ function InfoRow({ Icon, label, value, href }) {
   )
 }
 
-/* ── Instructor Card ──────────────────────────────────────────── */
 function InstructorCard({ person, onSelect }) {
-  const role     = ROLE_CONFIG[person.position_title] ?? { label: person.position_title ?? 'Staff', color: '#4E89BD', bg: '#EFF6FF', accent: 'linear-gradient(135deg,#3d6e98,#4E89BD)' }
+  const role = ROLE_CONFIG[person.position_title] ?? {
+    label: person.position_title ?? 'Staff',
+    color: '#4E89BD',
+    bg: '#EFF6FF',
+    accent: 'linear-gradient(135deg,#3d6e98,#4E89BD)',
+  }
   const hireYear = person.hire_date ? new Date(person.hire_date).getFullYear() : null
-  const skills   = (person.skills ?? []).slice(0, 3)
+  const skills = (person.skills ?? []).slice(0, 3)
 
   return (
     <div
@@ -167,11 +187,9 @@ function InstructorCard({ person, onSelect }) {
       onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.12)' }}
       onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 1px 4px rgba(0,0,0,0.06)' }}
     >
-      {/* Color accent top bar */}
       <div style={{ height: '5px', background: person.position_title === 'Instructor' ? 'linear-gradient(90deg,#7C3AED,#6D28D9)' : 'linear-gradient(90deg,#059669,#047857)' }} />
 
       <div style={{ padding: '20px', flex: 1, display: 'flex', flexDirection: 'column' }}>
-        {/* Avatar + name */}
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: '14px', marginBottom: '14px' }}>
           <Avatar person={person} size={50} fontSize={17} />
           <div style={{ flex: 1, minWidth: 0 }}>
@@ -184,7 +202,6 @@ function InstructorCard({ person, onSelect }) {
           </div>
         </div>
 
-        {/* Meta info */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', marginBottom: '12px' }}>
           {(person.city || person.state) && (
             <p style={{ fontSize: '12px', color: '#94A3B8', display: 'flex', alignItems: 'center', gap: '5px', margin: 0 }}>
@@ -203,7 +220,6 @@ function InstructorCard({ person, onSelect }) {
           )}
         </div>
 
-        {/* Skills preview */}
         {skills.length > 0 && (
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px', marginBottom: '14px' }}>
             {skills.map(s => {
@@ -220,9 +236,8 @@ function InstructorCard({ person, onSelect }) {
           </div>
         )}
 
-        {/* CTA */}
         <div style={{ marginTop: 'auto', display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <p style={{ fontSize: '12px', color: '#4E89BD', fontWeight: 700, margin: 0 }}>View profile →</p>
+          <p style={{ fontSize: '12px', color: '#4E89BD', fontWeight: 700, margin: 0 }}>View profile {'->'}</p>
           {person.calendly_url && (
             <span style={{ fontSize: '11px', fontWeight: 700, color: 'white', background: 'linear-gradient(135deg,#006BFF,#0052CC)', padding: '2px 8px', borderRadius: '20px', marginLeft: 'auto' }}>
               Calendly
@@ -234,59 +249,74 @@ function InstructorCard({ person, onSelect }) {
   )
 }
 
-/* ── Section ──────────────────────────────────────────────────── */
 function InstructorSection({ title, Icon, people, onSelect }) {
   return (
-    <div style={{ marginBottom: '36px' }}>
-      <h2 style={{ fontSize: '13px', fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-        <Icon size={14} style={{ color: '#4E89BD' }} /> {title}
-      </h2>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '16px' }}>
+    <section className="instructors-section">
+      <div className="instructors-section__heading">
+        {/* <span className="instructors-section__icon" aria-hidden="true">
+          <Icon size={15} />
+        </span> */}
+        <SectionHeading label={title} />
+      </div>
+      <div className="instructors-section__grid">
         {people.map(p => <InstructorCard key={p.id} person={p} onSelect={onSelect} />)}
       </div>
-    </div>
+    </section>
   )
 }
 
-/* ── Page ─────────────────────────────────────────────────────── */
 export default function InstructorsPage() {
   const [instructors, setInstructors] = useState([])
-  const [loading,     setLoading]     = useState(true)
-  const [selected,    setSelected]    = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [selected, setSelected] = useState(null)
 
   useEffect(() => {
     instructorService.getAll()
-      .then(res => setInstructors(res.data?.results ?? res.data ?? []))
+      .then(res => {
+        const data = res.data?.results ?? res.data ?? []
+        console.log('Instructors payload:', data)
+        setInstructors(data)
+      })
       .catch(() => {})
       .finally(() => setLoading(false))
   }, [])
 
   const teachers = instructors.filter(i => i.position_title === 'Instructor')
-  const tas      = instructors.filter(i => i.position_title === 'Teaching Assistant')
+  const tas = instructors.filter(i => i.position_title === 'Teaching Assistant')
 
-  if (loading) return <p style={{ color: '#94A3B8', fontSize: '14px' }}>Loading…</p>
+  if (loading) return <p className="instructors-loading">Loading...</p>
 
   return (
-    <div>
-      {/* Header */}
-      <div style={{ marginBottom: '32px' }}>
-        <h1 style={{ fontSize: '24px', fontWeight: 800, color: '#1E293B', margin: '0 0 6px' }}>Meet Your Instructors</h1>
-        <p style={{ fontSize: '14px', color: '#64748B', margin: 0 }}>The CodeX Academy team behind your learning journey</p>
-      </div>
-
-      {instructors.length === 0 ? (
-        <div style={{ background: 'white', borderRadius: '14px', border: '1px solid #E2E8F0', padding: '48px 24px', textAlign: 'center' }}>
-          <Users size={36} strokeWidth={1.2} style={{ color: '#CBD5E1', margin: '0 auto 12px', display: 'block' }} />
-          <p style={{ fontWeight: 700, fontSize: '15px', color: '#475569' }}>No instructors found</p>
+    <div className="codexhub-students">
+      <div className="codexhub-wide-shell instructors-page">
+        <div className="instructors-header-card">
+          <div className="instructors-header-card__copy">
+            <SectionHeading label="Instructors" />
+            <h1 className="codexhub-title codexhub-title--sm instructors-header-card__title">Meet Your Instructors</h1>
+            <p className="codexhub-subtitle instructors-header-card__subtitle">The CodeX Academy team behind your learning journey.</p>
+          </div>
+          <Link
+            to="/codexhub/students"
+            className="codexhub-btn codexhub-btn--ghost instructors-header-card__action"
+          >
+            Back to Dashboard
+          </Link>
         </div>
-      ) : (
-        <>
-          {teachers.length > 0 && <InstructorSection title="Teachers" Icon={GraduationCap} people={teachers} onSelect={setSelected} />}
-          {tas.length > 0      && <InstructorSection title="Teaching Assistants" Icon={Award} people={tas} onSelect={setSelected} />}
-        </>
-      )}
 
-      {selected && <ProfileModal person={selected} onClose={() => setSelected(null)} />}
+        {instructors.length === 0 ? (
+          <div className="instructors-empty-state">
+            <Users size={36} strokeWidth={1.2} className="instructors-empty-state__icon" />
+            <p className="instructors-empty-state__title">No instructors found</p>
+          </div>
+        ) : (
+          <>
+            {teachers.length > 0 && <InstructorSection title="Teachers" Icon={GraduationCap} people={teachers} onSelect={setSelected} />}
+            {tas.length > 0 && <InstructorSection title="Teaching Assistants" Icon={Award} people={tas} onSelect={setSelected} />}
+          </>
+        )}
+
+        {selected && <ProfileModal person={selected} onClose={() => setSelected(null)} />}
+      </div>
     </div>
   )
 }

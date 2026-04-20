@@ -2,10 +2,28 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import authService from '@/services/authService'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { Spinner } from '@/components/ui/spinner'
+
+const fieldStyle = {
+  width: '100%',
+  height: '44px',
+  borderRadius: '10px',
+  border: '2px solid #e2e8f0',
+  padding: '0 14px',
+  fontSize: '15px',
+  color: '#1e293b',
+  background: '#f8fafc',
+  outline: 'none',
+  boxSizing: 'border-box',
+}
+
+const labelStyle = {
+  display: 'block',
+  fontSize: '14px',
+  fontWeight: '600',
+  color: '#374151',
+  marginBottom: '8px',
+}
 
 export default function PasswordResetPage() {
   const [loading, setLoading] = useState(false)
@@ -27,63 +45,128 @@ export default function PasswordResetPage() {
     }
   }
 
+  const field = (name, opts = {}) => ({
+    ...register(name, opts),
+    style: {
+      ...fieldStyle,
+      border: errors[name] ? '2px solid #dc2626' : fieldStyle.border,
+    },
+    onFocus: e => (e.target.style.borderColor = '#4E89BD'),
+    onBlur: e => (e.target.style.borderColor = errors[name] ? '#dc2626' : '#e2e8f0'),
+  })
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-brand-bg px-4">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <div className="mx-auto h-12 w-12 rounded-xl bg-brand-blue flex items-center justify-center font-bold text-white text-lg mb-4">
-            HR
+    <main className="auth-shell">
+      <section className="auth-card">
+        <div className="auth-brandline">
+          <div className="auth-register-heading">
+            <h2 className="auth-register-title">Forgot your password?</h2>
+            <p className="auth-register-sub">
+              Enter the email tied to your CodeX Hub account and we&apos;ll send you a reset link.
+            </p>
           </div>
-          <h1 className="text-2xl font-bold text-brand-dark">Reset Password</h1>
-          <p className="text-slate-500 mt-1">Enter your email to receive a reset link</p>
         </div>
 
-        <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-8">
-          {success ? (
-            <div className="text-center space-y-4">
-              <div className="rounded-lg bg-green-50 border border-green-200 px-4 py-4 text-sm text-green-700">
-                <p className="font-medium">Check your inbox</p>
-                <p className="mt-1">If an account with that email exists, you will receive a password reset link shortly.</p>
-              </div>
-              <Link to="/login" className="text-sm text-brand-blue hover:underline">
+        {success ? (
+          <div>
+            <div style={{
+              background: '#f0fdf4',
+              border: '1px solid #bbf7d0',
+              borderRadius: '10px',
+              padding: '14px 16px',
+              marginTop: '10px',
+              color: '#166534',
+              fontSize: '14px',
+            }}>
+              <p style={{ fontWeight: 700, margin: 0 }}>Check your inbox</p>
+              <p style={{ margin: '6px 0 0' }}>
+                If an account with that email exists, you&apos;ll receive a password reset link shortly.
+              </p>
+            </div>
+
+            <p style={{ textAlign: 'center', marginTop: '22px', fontSize: '14px', color: '#64748b' }}>
+              Remembered it?{' '}
+              <Link to="/login" style={{ color: '#4E89BD', fontWeight: '700', textDecoration: 'none' }}>
                 Back to sign in
               </Link>
-            </div>
-          ) : (
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-              {error && (
-                <div className="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
-                  {error}
-                </div>
+            </p>
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit(onSubmit)} style={{ marginTop: '28px' }}>
+            {error && (
+              <div style={{
+                background: '#fef2f2',
+                border: '1px solid #fecaca',
+                borderRadius: '10px',
+                padding: '12px 16px',
+                marginBottom: '24px',
+                color: '#dc2626',
+                fontSize: '14px',
+              }}>
+                {error}
+              </div>
+            )}
+
+            <div style={{ marginBottom: '22px' }}>
+              <label htmlFor="email" style={labelStyle}>
+                Email address
+              </label>
+              <input
+                id="email"
+                type="email"
+                autoComplete="email"
+                placeholder="jane.doe@example.com"
+                {...field('email', {
+                  required: 'Email is required',
+                  pattern: { value: /^\S+@\S+\.\S+$/, message: 'Invalid email' },
+                })}
+              />
+              {errors.email && (
+                <p style={{ color: '#dc2626', fontSize: '13px', marginTop: '6px' }}>
+                  {errors.email.message}
+                </p>
               )}
+            </div>
 
-              <div className="space-y-1.5">
-                <Label htmlFor="email">Email address</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="jane.doe@example.com"
-                  {...register('email', {
-                    required: 'Email is required',
-                    pattern: { value: /^\S+@\S+\.\S+$/, message: 'Invalid email' }
-                  })}
-                />
-                {errors.email && <p className="text-xs text-red-600">{errors.email.message}</p>}
-              </div>
+            <button
+              type="submit"
+              disabled={loading}
+              style={{
+                width: '100%',
+                height: '48px',
+                borderRadius: '12px',
+                background: loading ? '#93b8d8' : 'linear-gradient(135deg, #4E89BD, #61AFEE)',
+                color: 'white',
+                fontWeight: '700',
+                fontSize: '16px',
+                border: 'none',
+                cursor: loading ? 'not-allowed' : 'pointer',
+                boxShadow: loading ? 'none' : '0 4px 16px rgba(78,137,189,0.40)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+              }}
+            >
+              {loading ? (
+                <>
+                  <Spinner size="sm" />
+                  Sending link...
+                </>
+              ) : (
+                'Send reset link'
+              )}
+            </button>
 
-              <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? <><Spinner size="sm" className="mr-2" /> Sending...</> : 'Send Reset Link'}
-              </Button>
-
-              <div className="text-center text-sm text-slate-500">
-                <Link to="/login" className="text-brand-blue hover:underline">
-                  Back to sign in
-                </Link>
-              </div>
-            </form>
-          )}
-        </div>
-      </div>
-    </div>
+            <p style={{ textAlign: 'center', marginTop: '22px', fontSize: '14px', color: '#64748b' }}>
+              Back to{' '}
+              <Link to="/login" style={{ color: '#4E89BD', fontWeight: '700', textDecoration: 'none' }}>
+                sign in
+              </Link>
+            </p>
+          </form>
+        )}
+      </section>
+    </main>
   )
 }

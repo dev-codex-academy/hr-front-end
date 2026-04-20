@@ -124,6 +124,7 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
+    if (!isStaff) return
     setLoading(true)
     const iso = new Date().toISOString().split('T')[0]
     Promise.allSettled([
@@ -143,7 +144,7 @@ export default function DashboardPage() {
       }))
       setLoading(false)
     })
-  }, [])
+  }, [isStaff])
 
   if (isStudent)    return <StudentsPage />
   if (isTA)         return <TAPage />

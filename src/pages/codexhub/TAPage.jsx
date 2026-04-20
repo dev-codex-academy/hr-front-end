@@ -6,6 +6,7 @@ import {
 import { Link } from 'react-router-dom'
 import { useAuth } from '@/context/AuthContext'
 import postService from '@/services/postService'
+import './CodexHubWideLayout.css'
 
 /* ── helpers ─────────────────────────────────────────────────── */
 function timeAgo(dateStr) {
@@ -162,24 +163,22 @@ export default function TAPage() {
   }
 
   return (
-    <div style={{ margin: '-28px -32px -40px', display: 'flex', flexDirection: 'column', minHeight: 'calc(100vh - 60px)' }}>
-
-      {/* Banner */}
-      <div style={{ background: 'linear-gradient(135deg,#3d6e98 0%,#4E89BD 60%,#61AFEE 100%)', padding: '32px 32px 28px', display: 'flex', alignItems: 'center', gap: '16px' }}>
-        <div style={{ width: '48px', height: '48px', borderRadius: '50%', flexShrink: 0, background: 'rgba(255,255,255,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', fontWeight: 800, color: 'white', border: '2px solid rgba(255,255,255,0.4)' }}>
-          {initials}
+    <div className="codexhub-students">
+      <div className="codexhub-wide-shell">
+        <div style={{ background: 'linear-gradient(135deg,#3d6e98 0%,#4E89BD 60%,#61AFEE 100%)', padding: '32px 32px 28px', display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '32px', borderRadius: '28px', boxShadow: '0 18px 36px rgba(61, 110, 152, 0.2)' }}>
+          <div style={{ width: '48px', height: '48px', borderRadius: '50%', flexShrink: 0, background: 'rgba(255,255,255,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', fontWeight: 800, color: 'white', border: '2px solid rgba(255,255,255,0.4)' }}>
+            {initials}
+          </div>
+          <div>
+            <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.75)', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '3px' }}>Teaching Assistant</p>
+            <h1 style={{ fontSize: '22px', fontWeight: 800, color: 'white', margin: 0 }}>Welcome, {displayName}!</h1>
+          </div>
         </div>
-        <div>
-          <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.75)', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '3px' }}>Teaching Assistant</p>
-          <h1 style={{ fontSize: '22px', fontWeight: 800, color: 'white', margin: 0 }}>Welcome, {displayName}!</h1>
-        </div>
-      </div>
 
-      {/* Body */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 260px', flex: 1, background: '#F1F5F9', borderTop: '1px solid #E2E8F0' }}>
+        <div className="codexhub-wide-grid codexhub-wide-grid--ta">
 
         {/* FEED */}
-        <div style={{ padding: '20px 24px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <div style={{ overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <p style={{ fontSize: '13px', fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.06em', margin: 0 }}>Community Feed</p>
           {postsLoading ? (
             <p style={{ color: '#94A3B8', fontSize: '14px' }}>Loading posts…</p>
@@ -191,7 +190,7 @@ export default function TAPage() {
         </div>
 
         {/* QUICK ACCESS */}
-        <div style={{ background: 'white', borderLeft: '1px solid #E2E8F0' }}>
+        <div className="codexhub-wide-panel">
           <div style={{ padding: '14px 16px', borderBottom: '1px solid #F1F5F9', position: 'sticky', top: 0, background: 'white', zIndex: 1 }}>
             <span style={{ fontWeight: 700, fontSize: '13px', color: '#1E293B' }}>Quick Access</span>
           </div>
@@ -213,6 +212,7 @@ export default function TAPage() {
               return <a key={label} href={href} target="_blank" rel="noreferrer" style={baseStyle} onMouseEnter={e => e.currentTarget.style.background='#F8FAFC'} onMouseLeave={e => e.currentTarget.style.background='transparent'}>{inner}</a>
             return <Link key={label} to={to} style={baseStyle} onMouseEnter={e => e.currentTarget.style.background='#F8FAFC'} onMouseLeave={e => e.currentTarget.style.background='transparent'}>{inner}</Link>
           })}
+        </div>
         </div>
       </div>
     </div>

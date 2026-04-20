@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Heart, MapPinIcon, SendIcon, Trash2 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import savedJobsService from './services/savedJobsService'
+import './CodexHubWideLayout.css'
 
 export default function SavedJobsPage() {
   const [jobs, setJobs] = useState(() => savedJobsService.getAll())
@@ -13,7 +14,7 @@ export default function SavedJobsPage() {
 
   return (
     <div className="codexhub-students">
-      <div className="codexhub-container">
+      <div className="codexhub-wide-shell">
         <div className="codexhub-jobs-header">
           <div>
             <p className="codexhub-section-label">Saved Jobs</p>

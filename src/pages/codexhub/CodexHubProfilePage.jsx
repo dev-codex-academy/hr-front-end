@@ -81,7 +81,7 @@ export default function CodexHubProfilePage() {
   const fileInputRef = useRef(null);
   const skillsHydratedRef = useRef(false);
 
-  // ── Data loading ──────────────────────────────────────────────
+  // Load profile
   useEffect(() => {
     const loadProfile = async () => {
       try {
@@ -523,15 +523,7 @@ export default function CodexHubProfilePage() {
     <div className="cxprofile-page">
       <div className="cxprofile-container">
         {/* ── Top nav row ── */}
-        <div className="cxprofile-topbar">
-          <SectionHeading label="Profile" />
-          <Link
-            to="/codexhub/students"
-            className="codexhub-btn codexhub-btn--ghost"
-          >
-            ← Back to Dashboard
-          </Link>
-        </div>
+        
 
         {profileNotice && (
           <div className="cxprofile-notice--warning">{profileNotice}</div>
@@ -540,6 +532,7 @@ export default function CodexHubProfilePage() {
         {/* ── Profile header card ── */}
         <div className="cxprofile-header-card">
           <div className="cxprofile-header-info">
+            <SectionHeading label="Profile" />
             <h1 className="cxprofile-name">{fullName}</h1>
             <p className="cxprofile-headline">
               {profileData.headline ||
@@ -577,6 +570,12 @@ export default function CodexHubProfilePage() {
             {uploadError && (
               <p className="cxprofile-upload-error">{uploadError}</p>
             )}
+            <Link
+              to="/codexhub/students"
+              className="codexhub-btn codexhub-btn--ghost"
+            >
+              ← Back to Dashboard
+            </Link>
           </div>
           <input
             ref={fileInputRef}
@@ -680,17 +679,17 @@ export default function CodexHubProfilePage() {
               {savedJobs.length ? (
                 <div className="cxprofile-saved-list">
                   {savedJobs.slice(0, 4).map((job) => (
-  <div
-    key={job.id || job.title}
-    className="cxprofile-saved-item"
-  >
-    <p className="cxprofile-saved-title">{job.title}</p>
-    <p className="cxprofile-saved-sub">
-      {job.company_name || "Employer"} ·{" "}
-      {job.location || "Remote"}
-    </p>
-  </div>
-))}
+                    <div
+                      key={job.id || job.title}
+                      className="cxprofile-saved-item"
+                    >
+                      <p className="cxprofile-saved-title">{job.title}</p>
+                      <p className="cxprofile-saved-sub">
+                        {job.company_name || "Employer"} ·{" "}
+                        {job.location || "Remote"}
+                      </p>
+                    </div>
+                  ))}
                 </div>
               ) : (
                 <p className="cxprofile-muted">

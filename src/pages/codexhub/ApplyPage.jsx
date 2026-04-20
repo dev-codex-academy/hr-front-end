@@ -5,6 +5,7 @@ import { useAuth } from '@/context/AuthContext'
 import publicJobService from '@/services/publicJobService'
 import jobApplicationService from '@/services/jobApplicationService'
 import applicantService from '@/services/applicantService'
+import './CodexHubWideLayout.css'
 
 export default function ApplyPage() {
   const { jobId } = useParams()
@@ -24,6 +25,7 @@ export default function ApplyPage() {
   const [submitError, setSubmitError] = useState('')
   const [submitted, setSubmitted] = useState(false)
   const [existingApplication, setExistingApplication] = useState(false)
+  const resolvedJobId = job?.id ?? jobId
 
   // If not authenticated, save pending job and redirect to login
   useEffect(() => {
@@ -70,13 +72,13 @@ export default function ApplyPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    if (!applicantId) return
+    if (!applicantId || !resolvedJobId) return
     setSubmitting(true)
     setSubmitError('')
     try {
       await jobApplicationService.create({
         applicant: applicantId,
-        job: Number(jobId),
+        job: resolvedJobId,
         cover_letter: coverLetter,
       })
       setSubmitted(true)
@@ -93,7 +95,7 @@ export default function ApplyPage() {
   if (authLoading || jobLoading) {
     return (
       <div className="codexhub-students">
-        <div className="codexhub-container">
+        <div className="codexhub-wide-shell codexhub-wide-content--narrow">
           <div className="codexhub-card codexhub-empty">Loading…</div>
         </div>
       </div>
@@ -103,7 +105,7 @@ export default function ApplyPage() {
   if (jobError) {
     return (
       <div className="codexhub-students">
-        <div className="codexhub-container">
+        <div className="codexhub-wide-shell codexhub-wide-content--narrow">
           <div className="codexhub-card codexhub-empty">{jobError}</div>
         </div>
       </div>
@@ -113,7 +115,7 @@ export default function ApplyPage() {
   if (submitted) {
     return (
       <div className="codexhub-students">
-        <div className="codexhub-container">
+        <div className="codexhub-wide-shell codexhub-wide-content--narrow">
           <div className="codexhub-card" style={{ maxWidth: 560, margin: '0 auto', textAlign: 'center', padding: '48px 32px' }}>
             <CheckCircleIcon style={{ width: 52, height: 52, color: '#16a34a', margin: '0 auto 20px' }} />
             <h2 style={{ fontSize: 22, fontWeight: 800, color: 'var(--text)', margin: '0 0 10px' }}>
@@ -139,7 +141,7 @@ export default function ApplyPage() {
 
   return (
     <div className="codexhub-students">
-      <div className="codexhub-container" style={{ maxWidth: 680 }}>
+      <div className="codexhub-wide-shell codexhub-wide-content--narrow">
         {/* Back */}
         <Link
           to="/codexhub/jobs"
