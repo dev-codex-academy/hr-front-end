@@ -69,7 +69,7 @@ export default function PositionsPage() {
 
   const handleDelete = async (pos) => {
     const result = await Swal.fire({
-      title: 'Delete position?',
+      title: 'Delete position??',
       text: `"${pos.title}" will be permanently removed.`,
       icon: 'warning',
       showCancelButton: true,

@@ -40,7 +40,7 @@ export default function LoginPage() {
     <main className="auth-shell">
       <section className="auth-card">
         <div className="auth-brandline">
-          {/* <img className="auth-brand-logo" src="/codeX-logo.png" alt="CodeX logo" /> */}
+          <img className="auth-brand-logo" src="/codeX-logo.png" alt="CodeX logo" />
           <div>
             <p className="auth-app">CodeX Hub</p>
             <p className="auth-tag">People operations, made simple.</p>
