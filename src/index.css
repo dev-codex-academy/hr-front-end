@@ -262,18 +262,18 @@ textarea {
 .topbar-menu-btn {
   padding: 7px;
   border-radius: var(--radius);
-  background: rgba(255, 255, 255, 0.1);
+  background: transparent;
   border: none;
   cursor: pointer;
-  color: rgba(255, 255, 255, 0.85);
+  color: #3d6e98;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: background 0.15s;
 }
 .topbar-menu-btn:hover {
-  background: rgba(255, 255, 255, 0.22);
-  color: #ffffff;
+  background: rgba(61, 110, 152, 0.1);
+  color: #2a5278;
 }
 .topbar-logo {
   height: 28px;
@@ -284,7 +284,7 @@ textarea {
 .topbar-title {
   font-size: 16px;
   font-weight: 700;
-  color: #ffffff;
+  color: #3d6e98;
   flex: 1;
 }
 .topbar-user {
@@ -297,15 +297,15 @@ textarea {
   transition: background 0.15s, transform 0.15s;
 }
 .topbar-user:hover {
-  background: rgba(255, 255, 255, 0.14);
+  background: rgba(61, 110, 152, 0.08);
   transform: translateY(-1px);
 }
 .topbar-avatar {
   width: 30px;
   height: 30px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.2);
-  border: 2px solid rgba(255, 255, 255, 0.4);
+  background: #3d6e98;
+  border: 2px solid rgba(61, 110, 152, 0.3);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -317,7 +317,7 @@ textarea {
 .topbar-user-name {
   font-size: 13px;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.9);
+  color: #3d6e98;
 }
 @media (max-width: 480px) {
   .topbar-user-name {
