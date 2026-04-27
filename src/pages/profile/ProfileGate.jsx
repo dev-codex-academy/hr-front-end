@@ -1,11 +1,14 @@
 import { Navigate } from 'react-router-dom'
 import { useAuth } from '@/context/AuthContext'
+import { useIsMobile } from '@/hooks/useIsMobile'
 import ProfilePage from '@/pages/profile/ProfilePage'
 import CodexHubProfilePage from '@/pages/codexhub/CodexHubProfilePage'
+import CodexHubProfilePageMobile from '@/pages/codexhub/CodexHubProfilePageMobile'
 import InstructorProfilePage from '@/pages/profile/InstructorProfilePage'
 
 export default function ProfileGate() {
   const { user, loading } = useAuth()
+  const isMobile = useIsMobile()
 
   if (loading) return null
   if (!user) return <Navigate to="/login" replace />
@@ -17,6 +20,6 @@ export default function ProfileGate() {
   const isStudent    = !isStaff && !isTA && !isInstructor
 
   if (isTA || isInstructor) return <InstructorProfilePage />
-  if (isStudent)            return <CodexHubProfilePage />
+  if (isStudent)            return isMobile ? <CodexHubProfilePageMobile /> : <CodexHubProfilePage />
   return <ProfilePage />
 }

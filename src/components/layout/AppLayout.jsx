@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Outlet } from 'react-router-dom'
 import Sidebar from './Sidebar'
 import TopBar from './TopBar'
+import MobileFooterNav from './MobileFooterNav'
 
 export default function AppLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -17,6 +18,8 @@ export default function AppLayout() {
           <Outlet />
         </main>
       </div>
+
+      <MobileFooterNav />
     </div>
   )
 }

@@ -195,15 +195,6 @@ export default function StudentsPage({ userName }) {
   const initials = (user?.first_name?.[0] ?? user?.username?.[0] ?? 'S').toUpperCase()
   const unreadCount = notifications.filter(n => !n.is_read).length
 
-  const FOOTER_ITEMS = [
-    { label: 'Courses',      Icon: GraduationCap, color: '#F97316', href: 'https://moodle.mycodexacademy.com/login/index.php?lang=en_us', external: true },
-    { label: 'Career',       Icon: Briefcase,     color: '#4E89BD', to: '/codexhub/jobs' },
-    { label: 'Profile',      Icon: User,          color: '#8B5CF6', to: '/profile' },
-    { label: 'Applications', Icon: FileTextIcon,  color: '#64748B', to: '/job-applications' },
-    { label: 'Instructors',  Icon: Star,          color: '#D97706', to: '/codexhub/instructors' },
-    { label: 'Alerts',       Icon: Bell,          color: '#E06C75', to: '/notifications', badge: unreadCount },
-  ]
-
   return (
     <div className="codexhub-students">
       <div className="students-page-shell">
@@ -336,32 +327,6 @@ export default function StudentsPage({ userName }) {
           </div>
         </div>
 
-        {/* Mobile footer nav */}
-        <nav className="students-mobile-footer">
-          {FOOTER_ITEMS.map(({ label, Icon, color, to, href, external, badge }) => {
-            const content = (
-              <span className="students-mobile-footer__item">
-                <span className="students-mobile-footer__icon-wrap">
-                  <Icon size={22} strokeWidth={2} style={{ color }} />
-                  {badge > 0 && (
-                    <span className="students-mobile-footer__badge">{badge > 9 ? '9+' : badge}</span>
-                  )}
-                </span>
-                <span className="students-mobile-footer__label">{label}</span>
-              </span>
-            )
-
-            return external ? (
-              <a key={label} href={href} target="_blank" rel="noreferrer" className="students-mobile-footer__link">
-                {content}
-              </a>
-            ) : (
-              <Link key={label} to={to} className="students-mobile-footer__link">
-                {content}
-              </Link>
-            )
-          })}
-        </nav>
       </div>
     </div>
   )
