@@ -675,8 +675,14 @@
     padding-right: 64px;
   }
 
+  /* Hide sidebars on mobile — footer nav replaces them */
+  .students-panel--notifications,
+  .students-panel--actions {
+    display: none;
+  }
+
   .students-page-body {
-    padding: 0 0 34px;
+    padding: 0 0 16px;
   }
 
   .students-page-grid {
