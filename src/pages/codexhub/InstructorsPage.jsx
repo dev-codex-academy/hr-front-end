@@ -1,24 +1,25 @@
 import React, { useEffect, useState } from 'react'
 import {
-  GraduationCap, Users, X, MapPin, Mail, Calendar,
+  GraduationCap, Users, MapPin, Mail, Calendar,
   BookOpen, ExternalLink, Award, Star,
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import instructorService from '@/services/instructorService'
 import { SectionHeading } from './components/SectionHeading'
+import { Dialog, DialogContent } from '@/components/ui/dialog'
 import './CodexHubWideLayout.css'
 import './InstructorsPage.css'
 
 const ROLE_CONFIG = {
-  Instructor: { label: 'Teacher', color: '#7C3AED', bg: '#EDE9FE', accent: 'linear-gradient(135deg,#7C3AED,#6D28D9)' },
-  'Teaching Assistant': { label: 'Teaching Assistant', color: '#059669', bg: '#D1FAE5', accent: 'linear-gradient(135deg,#059669,#047857)' },
+  Instructor: { label: 'Teacher', color: '#3d6e98', bg: '#EFF6FF', accent: 'linear-gradient(135deg,#3d6e98,#4E89BD)' },
+  'Teaching Assistant': { label: 'Teaching Assistant', color: '#4E89BD', bg: '#f5f9ff', accent: 'linear-gradient(135deg,#4E89BD,#61afee)' },
 }
 
 const SKILL_LEVEL_COLOR = {
-  expert: { color: '#7C3AED', bg: '#EDE9FE' },
-  advanced: { color: '#1D4ED8', bg: '#DBEAFE' },
-  intermediate: { color: '#065F46', bg: '#D1FAE5' },
-  beginner: { color: '#92400E', bg: '#FEF3C7' },
+  expert:       { color: '#3d6e98', bg: '#EFF6FF' },
+  advanced:     { color: '#4E89BD', bg: '#f5f9ff' },
+  intermediate: { color: '#64748b', bg: '#f8fafc' },
+  beginner:     { color: '#92400E', bg: '#FEF3C7' },
 }
 
 function Avatar({ person, size = 52, fontSize = 18 }) {
@@ -59,7 +60,7 @@ function Avatar({ person, size = 52, fontSize = 18 }) {
   )
 }
 
-function ProfileModal({ person, onClose }) {
+function InstructorProfileContent({ person }) {
   const role = ROLE_CONFIG[person.position_title] ?? {
     label: person.position_title ?? 'Staff',
     color: '#4E89BD',
@@ -70,86 +71,64 @@ function ProfileModal({ person, onClose }) {
   const skills = person.skills ?? []
 
   return (
-    <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 50, background: 'rgba(0,0,0,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px', backdropFilter: 'blur(2px)' }}>
-      <div onClick={e => e.stopPropagation()} style={{ background: 'white', borderRadius: '20px', width: '100%', maxWidth: '480px', boxShadow: '0 24px 64px rgba(0,0,0,0.3)', overflow: 'hidden' }}>
-        <div style={{ background: 'linear-gradient(135deg,#1e3a5f 0%,#3d6e98 50%,#4E89BD 100%)', padding: '28px 24px 24px', position: 'relative' }}>
-          <button onClick={onClose} style={{ position: 'absolute', top: '14px', right: '14px', background: 'rgba(255,255,255,0.15)', border: 'none', borderRadius: '50%', width: '30px', height: '30px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white' }}>
-            <X size={15} />
-          </button>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '18px' }}>
-            <Avatar person={person} size={76} fontSize={26} />
-            <div>
-              <h2 style={{ fontSize: '21px', fontWeight: 800, color: 'white', margin: '0 0 6px' }}>
-                {person.first_name} {person.last_name}
-              </h2>
-              <span style={{ fontSize: '12px', fontWeight: 700, color: role.color, background: role.bg, padding: '3px 12px', borderRadius: '20px' }}>
-                {role.label}
-              </span>
-              {person.notes && (
-                <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.8)', marginTop: '8px', lineHeight: 1.5, maxWidth: '280px' }}>{person.notes}</p>
-              )}
-            </div>
-          </div>
-        </div>
-
-        <div style={{ padding: '22px 24px' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '20px' }}>
-            {person.position_title && <InfoRow Icon={BookOpen} label="Role" value={person.position_title} />}
-            {(person.city || person.state) && (
-              <InfoRow Icon={MapPin} label="Location" value={[person.city, person.state, person.country].filter(Boolean).join(', ')} />
+    <>
+      <div className="instructor-detail-hero">
+        <div className="instructor-detail-hero__inner">
+          <Avatar person={person} size={68} fontSize={24} />
+          <div>
+            <h2 className="instructor-detail-hero__name">
+              {person.first_name} {person.last_name}
+            </h2>
+            <span className="instructor-detail-hero__role" style={{ color: role.color, background: role.bg }}>
+              {role.label}
+            </span>
+            {person.notes && (
+              <p className="instructor-detail-hero__notes">{person.notes}</p>
             )}
-            {hireYear && <InfoRow Icon={Calendar} label="CodeX member since" value={String(hireYear)} />}
-            {person.email && <InfoRow Icon={Mail} label="Email" value={person.email} href={`mailto:${person.email}`} />}
           </div>
-
-          {person.calendly_url && (
-            <a
-              href={person.calendly_url}
-              target="_blank"
-              rel="noreferrer"
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px',
-                background: 'linear-gradient(135deg,#006BFF,#0052CC)',
-                color: 'white',
-                textDecoration: 'none',
-                borderRadius: '10px',
-                padding: '11px 16px',
-                fontSize: '14px',
-                fontWeight: 700,
-                boxShadow: '0 4px 12px rgba(0,107,255,0.3)',
-                marginBottom: '20px',
-                transition: 'opacity 0.15s',
-              }}
-              onMouseEnter={e => e.currentTarget.style.opacity = '0.9'}
-              onMouseLeave={e => e.currentTarget.style.opacity = '1'}
-            >
-              <Calendar size={16} strokeWidth={2} />
-              Schedule a Meeting
-              <ExternalLink size={13} style={{ opacity: 0.8 }} />
-            </a>
-          )}
-
-          {skills.length > 0 && (
-            <div>
-              <p style={{ fontSize: '11px', fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '10px' }}>Skills</p>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                {skills.map(s => {
-                  const lvl = SKILL_LEVEL_COLOR[s.level] ?? SKILL_LEVEL_COLOR.intermediate
-                  return (
-                    <span key={s.id} style={{ fontSize: '12px', fontWeight: 600, color: lvl.color, background: lvl.bg, padding: '3px 10px', borderRadius: '20px' }}>
-                      {s.skill_name}
-                    </span>
-                  )
-                })}
-              </div>
-            </div>
-          )}
         </div>
       </div>
-    </div>
+
+      <div className="instructor-detail-body">
+        <div className="instructor-detail-info">
+          {person.position_title && <InfoRow Icon={BookOpen} label="Role" value={person.position_title} />}
+          {(person.city || person.state) && (
+            <InfoRow Icon={MapPin} label="Location" value={[person.city, person.state, person.country].filter(Boolean).join(', ')} />
+          )}
+          {hireYear && <InfoRow Icon={Calendar} label="CodeX member since" value={String(hireYear)} />}
+          {person.email && <InfoRow Icon={Mail} label="Email" value={person.email} href={`mailto:${person.email}`} />}
+        </div>
+
+        {person.calendly_url && (
+          <a
+            href={person.calendly_url}
+            target="_blank"
+            rel="noreferrer"
+            className="instructor-detail-calendly"
+          >
+            <Calendar size={16} strokeWidth={2} />
+            Schedule a Meeting
+            <ExternalLink size={13} style={{ opacity: 0.8 }} />
+          </a>
+        )}
+
+        {skills.length > 0 && (
+          <div>
+            <p className="instructor-detail-skills-label">Skills</p>
+            <div className="instructor-detail-skills">
+              {skills.map(s => {
+                const lvl = SKILL_LEVEL_COLOR[s.level] ?? SKILL_LEVEL_COLOR.intermediate
+                return (
+                  <span key={s.id} className="instructor-detail-skill-badge" style={{ color: lvl.color, background: lvl.bg }}>
+                    {s.skill_name}
+                  </span>
+                )
+              })}
+            </div>
+          </div>
+        )}
+      </div>
+    </>
   )
 }
 
@@ -181,67 +160,61 @@ function InstructorCard({ person, onSelect }) {
   const skills = (person.skills ?? []).slice(0, 3)
 
   return (
-    <div
-      onClick={() => onSelect(person)}
-      style={{ background: 'white', borderRadius: '14px', border: '1px solid #E2E8F0', overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.06)', cursor: 'pointer', transition: 'transform 0.15s, box-shadow 0.15s', display: 'flex', flexDirection: 'column' }}
-      onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.12)' }}
-      onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 1px 4px rgba(0,0,0,0.06)' }}
-    >
-      <div style={{ height: '5px', background: person.position_title === 'Instructor' ? 'linear-gradient(90deg,#7C3AED,#6D28D9)' : 'linear-gradient(90deg,#059669,#047857)' }} />
+    <div className="instructor-card" onClick={() => onSelect(person)}>
+      <div className="instructor-card__bar" style={{ background: role.accent }} />
 
-      <div style={{ padding: '20px', flex: 1, display: 'flex', flexDirection: 'column' }}>
-        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '14px', marginBottom: '14px' }}>
+      <div className="instructor-card__body">
+        <div className="instructor-card__top">
           <Avatar person={person} size={50} fontSize={17} />
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <p style={{ fontSize: '15px', fontWeight: 800, color: '#1E293B', marginBottom: '4px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-              {person.first_name} {person.last_name}
-            </p>
-            <span style={{ fontSize: '11px', fontWeight: 700, color: role.color, background: role.bg, padding: '2px 8px', borderRadius: '20px' }}>
+          <div className="instructor-card__top-info">
+            <p className="instructor-card__name">{person.first_name} {person.last_name}</p>
+            <span className="instructor-card__role-badge" style={{ color: role.color, background: role.bg }}>
               {role.label}
             </span>
           </div>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', marginBottom: '12px' }}>
+        <div className="instructor-card__meta">
           {(person.city || person.state) && (
-            <p style={{ fontSize: '12px', color: '#94A3B8', display: 'flex', alignItems: 'center', gap: '5px', margin: 0 }}>
-              <MapPin size={11} strokeWidth={2} /> {person.city}{person.state ? `, ${person.state}` : ''}
+            <p className="instructor-card__meta-row">
+              <MapPin size={11} strokeWidth={2} />
+              {person.city}{person.state ? `, ${person.state}` : ''}
             </p>
           )}
           {hireYear && (
-            <p style={{ fontSize: '12px', color: '#94A3B8', display: 'flex', alignItems: 'center', gap: '5px', margin: 0 }}>
-              <Calendar size={11} strokeWidth={2} /> Member since {hireYear}
+            <p className="instructor-card__meta-row">
+              <Calendar size={11} strokeWidth={2} />
+              Member since {hireYear}
             </p>
           )}
           {person.calendly_url && (
-            <p style={{ fontSize: '12px', color: '#006BFF', display: 'flex', alignItems: 'center', gap: '5px', margin: 0, fontWeight: 600 }}>
-              <Star size={11} strokeWidth={2} /> Schedule available
+            <p className="instructor-card__meta-row instructor-card__meta-row--calendly">
+              <Star size={11} strokeWidth={2} />
+              Schedule available
             </p>
           )}
         </div>
 
         {skills.length > 0 && (
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px', marginBottom: '14px' }}>
+          <div className="instructor-card__skills">
             {skills.map(s => {
               const lvl = SKILL_LEVEL_COLOR[s.level] ?? SKILL_LEVEL_COLOR.intermediate
               return (
-                <span key={s.id} style={{ fontSize: '11px', fontWeight: 600, color: lvl.color, background: lvl.bg, padding: '2px 8px', borderRadius: '20px' }}>
+                <span key={s.id} className="instructor-card__skill-badge" style={{ color: lvl.color, background: lvl.bg }}>
                   {s.skill_name}
                 </span>
               )
             })}
             {(person.skills ?? []).length > 3 && (
-              <span style={{ fontSize: '11px', color: '#94A3B8', padding: '2px 6px' }}>+{(person.skills ?? []).length - 3} more</span>
+              <span className="instructor-card__skill-more">+{(person.skills ?? []).length - 3} more</span>
             )}
           </div>
         )}
 
-        <div style={{ marginTop: 'auto', display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <p style={{ fontSize: '12px', color: '#4E89BD', fontWeight: 700, margin: 0 }}>View profile {'->'}</p>
+        <div className="instructor-card__footer">
+          <span className="instructor-card__cta">View profile →</span>
           {person.calendly_url && (
-            <span style={{ fontSize: '11px', fontWeight: 700, color: 'white', background: 'linear-gradient(135deg,#006BFF,#0052CC)', padding: '2px 8px', borderRadius: '20px', marginLeft: 'auto' }}>
-              Calendly
-            </span>
+            <span className="instructor-card__calendly-badge">Calendly</span>
           )}
         </div>
       </div>
@@ -274,7 +247,6 @@ export default function InstructorsPage() {
     instructorService.getAll()
       .then(res => {
         const data = res.data?.results ?? res.data ?? []
-        console.log('Instructors payload:', data)
         setInstructors(data)
       })
       .catch(() => {})
@@ -309,14 +281,19 @@ export default function InstructorsPage() {
             <p className="instructors-empty-state__title">No instructors found</p>
           </div>
         ) : (
-          <>
+          <div className="instructors-sections-grid">
             {teachers.length > 0 && <InstructorSection title="Teachers" Icon={GraduationCap} people={teachers} onSelect={setSelected} />}
             {tas.length > 0 && <InstructorSection title="Teaching Assistants" Icon={Award} people={tas} onSelect={setSelected} />}
-          </>
+          </div>
         )}
 
-        {selected && <ProfileModal person={selected} onClose={() => setSelected(null)} />}
       </div>
+
+      <Dialog open={!!selected} onOpenChange={(open) => !open && setSelected(null)}>
+        <DialogContent className="instructor-detail-dialog">
+          {selected && <InstructorProfileContent person={selected} />}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

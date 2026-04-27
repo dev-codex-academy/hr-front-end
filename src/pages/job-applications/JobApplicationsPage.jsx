@@ -1,18 +1,19 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { useForm } from 'react-hook-form'
-import { Plus, Pencil, Trash2, ArrowRight, FileText } from 'lucide-react'
+import { Plus, Pencil, Trash2, ArrowRight, FileText, Search } from 'lucide-react'
 import Swal from 'sweetalert2'
 import jobApplicationService from '@/services/jobApplicationService'
 import jobService from '@/services/jobService'
 import applicantService from '@/services/applicantService'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
 import { Card, CardContent } from '@/components/ui/card'
 import { SpinnerOverlay } from '@/components/ui/spinner'
 import FormModal from '@/components/common/FormModal'
+import { useTablePage } from '@/hooks/useTablePage'
+import { Pagination } from '@/components/ui/pagination'
 
 const STAGES = [
   'applied', 'screening', 'phone_interview', 'interview',
@@ -33,6 +34,8 @@ const STAGE_COLORS = {
   withdrawn: 'default',
 }
 
+const label = (s) => s.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+
 const formatDate = (dt) => {
   if (!dt) return '—'
   return new Date(dt).toLocaleDateString()
@@ -46,7 +49,9 @@ export default function JobApplicationsPage() {
   const [saving, setSaving] = useState(false)
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState(null)
+
   const { register, handleSubmit, reset, formState: { errors } } = useForm()
+  const { search, setSearch, filters, setFilter, page, setPage, paginate } = useTablePage()
 
   const fetchData = async () => {
     setLoading(true)
@@ -68,15 +73,25 @@ export default function JobApplicationsPage() {
 
   useEffect(() => { fetchData() }, [])
 
+  const filtered = useMemo(() => {
+    let list = applications
+    if (search) {
+      const q = search.toLowerCase()
+      list = list.filter(a =>
+        a.applicant_name?.toLowerCase().includes(q) ||
+        a.job_title?.toLowerCase().includes(q)
+      )
+    }
+    if (filters.stage) list = list.filter(a => a.stage === filters.stage)
+    return list
+  }, [applications, search, filters])
+
+  const { rows, totalPages, totalRows } = paginate(filtered)
+
   const openNew = () => { setEditing(null); reset({}); setModalOpen(true) }
   const openEdit = (app) => {
     setEditing(app)
-    reset({
-      applicant: app.applicant,
-      job: app.job,
-      stage: app.stage,
-      cover_letter: app.cover_letter,
-    })
+    reset({ applicant: app.applicant, job: app.job, stage: app.stage, cover_letter: app.cover_letter })
     setModalOpen(true)
   }
 
@@ -126,10 +141,7 @@ export default function JobApplicationsPage() {
       html: `<p style="margin-bottom:8px">Applicant: <strong>${app.applicant_name || '—'}</strong></p>`,
       input: 'select',
       inputOptions: Object.fromEntries(
-        STAGES.filter(s => s !== app.stage).map(s => [
-          s,
-          s.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
-        ])
+        STAGES.filter(s => s !== app.stage).map(s => [s, label(s)])
       ),
       inputPlaceholder: 'Select new stage',
       showCancelButton: true,
@@ -165,6 +177,26 @@ export default function JobApplicationsPage() {
         </Button>
       </div>
 
+      <div className="table-filters">
+        <div className="table-filters__search">
+          <Search size={15} className="table-filters__search-icon" />
+          <input
+            className="table-filters__search-input"
+            placeholder="Search by applicant or job…"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+          />
+        </div>
+        <select
+          className="table-filters__select"
+          value={filters.stage || ''}
+          onChange={e => setFilter('stage', e.target.value)}
+        >
+          <option value="">All Stages</option>
+          {STAGES.map(s => <option key={s} value={s}>{label(s)}</option>)}
+        </select>
+      </div>
+
       <Card>
         <CardContent>
           {loading ? (
@@ -181,35 +213,36 @@ export default function JobApplicationsPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {applications.length === 0 ? (
+                {rows.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={5}>
                       <div className="empty-state">
                         <FileText strokeWidth={1.5} />
-                        <p className="empty-state-title">No applications yet</p>
-                        <p className="empty-state-desc">Applications will appear here as candidates apply</p>
+                        <p className="empty-state-title">
+                          {applications.length === 0 ? 'No applications yet' : 'No applications match your filter'}
+                        </p>
+                        <p className="empty-state-desc">
+                          {applications.length === 0
+                            ? 'Applications will appear here as candidates apply'
+                            : 'Try adjusting your search or stage filter.'}
+                        </p>
                       </div>
                     </TableCell>
                   </TableRow>
                 ) : (
-                  applications.map((app) => (
+                  rows.map((app) => (
                     <TableRow key={app.id}>
                       <TableCell>{app.applicant_name || '—'}</TableCell>
                       <TableCell>{app.job_title || '—'}</TableCell>
                       <TableCell>
                         <Badge variant={STAGE_COLORS[app.stage] || 'default'}>
-                          {app.stage ? app.stage.charAt(0).toUpperCase() + app.stage.slice(1) : '—'}
+                          {app.stage ? label(app.stage) : '—'}
                         </Badge>
                       </TableCell>
                       <TableCell>{formatDate(app.stage_updated_at)}</TableCell>
                       <TableCell>
                         <div className="row-actions">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleAdvanceStage(app)}
-                            title="Advance Stage"
-                          >
+                          <Button variant="outline" size="sm" onClick={() => handleAdvanceStage(app)} title="Advance Stage">
                             <ArrowRight className="h-3.5 w-3.5 mr-1" /> Advance
                           </Button>
                           <Button variant="ghost" size="icon" onClick={() => openEdit(app)}>
@@ -229,6 +262,8 @@ export default function JobApplicationsPage() {
         </CardContent>
       </Card>
 
+      <Pagination page={page} totalPages={totalPages} totalRows={totalRows} onPageChange={setPage} />
+
       <FormModal
         open={modalOpen}
         onOpenChange={setModalOpen}
@@ -238,10 +273,7 @@ export default function JobApplicationsPage() {
       >
         <div className="form-group">
           <Label>Applicant *</Label>
-          <select
-            {...register('applicant', { required: 'Required' })}
-            className="form-select"
-          >
+          <select {...register('applicant', { required: 'Required' })} className="form-select">
             <option value="">— Select Applicant —</option>
             {applicants.map(a => (
               <option key={a.id} value={a.id}>
@@ -253,38 +285,21 @@ export default function JobApplicationsPage() {
         </div>
         <div className="form-group">
           <Label>Job *</Label>
-          <select
-            {...register('job', { required: 'Required' })}
-            className="form-select"
-          >
+          <select {...register('job', { required: 'Required' })} className="form-select">
             <option value="">— Select Job —</option>
-            {jobs.map(j => (
-              <option key={j.id} value={j.id}>{j.title}</option>
-            ))}
+            {jobs.map(j => <option key={j.id} value={j.id}>{j.title}</option>)}
           </select>
           {errors.job && <p className="form-error">{errors.job.message}</p>}
         </div>
         <div className="form-group">
           <Label>Stage</Label>
-          <select
-            {...register('stage')}
-            className="form-select"
-          >
-            {STAGES.map(s => (
-              <option key={s} value={s}>
-                {s.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}
-              </option>
-            ))}
+          <select {...register('stage')} className="form-select">
+            {STAGES.map(s => <option key={s} value={s}>{label(s)}</option>)}
           </select>
         </div>
         <div className="form-group">
           <Label>Cover Letter</Label>
-          <textarea
-            {...register('cover_letter')}
-            rows={4}
-            placeholder="Cover letter text..."
-            className="form-textarea"
-          />
+          <textarea {...register('cover_letter')} rows={4} placeholder="Cover letter text..." className="form-textarea" />
         </div>
       </FormModal>
     </div>

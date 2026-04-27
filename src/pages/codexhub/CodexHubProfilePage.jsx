@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { UploadIcon, ExternalLinkIcon } from "lucide-react";
+import { UploadIcon, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import applicantService from "@/services/applicantService";
 import workExperienceService from "@/services/workExperienceService";
@@ -10,7 +11,6 @@ import { SectionHeading } from "./components/SectionHeading";
 import { SkillsSection } from "./components/SkillsSection";
 import { WorkExperienceSection } from "./components/WorkExperienceSection";
 import { ApplicationsSection } from "./components/ApplicationsSection";
-import savedJobsService from "./services/savedJobsService";
 
 const DEFAULT_SKILLS = [
   "React",
@@ -50,7 +50,6 @@ export default function CodexHubProfilePage() {
   const [profileLoaded, setProfileLoaded] = useState(false);
   const [applications, setApplications] = useState([]);
   const [fallbackApplications, setFallbackApplications] = useState([]);
-  const [savedJobs, setSavedJobs] = useState([]);
   const [isEditing, setIsEditing] = useState(false);
   const [formState, setFormState] = useState({});
   const [profileNotice, setProfileNotice] = useState("");
@@ -189,9 +188,6 @@ export default function CodexHubProfilePage() {
     loadApplications();
   }, [profileData]);
 
-  useEffect(() => {
-    setSavedJobs(savedJobsService.getSavedJobsLocal());
-  }, []);
 
 
   useEffect(() => {
@@ -239,7 +235,7 @@ export default function CodexHubProfilePage() {
     app.job?.position?.title ||
     "Job Application";
 
-  // ── Helpers ───────────────────────────────────────────────────
+  //  Helpers 
   const sortExperiences = (items) => {
     try {
       return [...(Array.isArray(items) ? items : [])].sort((a, b) =>
@@ -250,7 +246,7 @@ export default function CodexHubProfilePage() {
     }
   };
 
-  // ── Handlers — profile ────────────────────────────────────────
+  // profile
   const handleFieldChange = (field, value) =>
     setFormState((prev) => ({ ...prev, [field]: value }));
 
@@ -274,7 +270,7 @@ export default function CodexHubProfilePage() {
     setIsEditing(false);
   };
 
-  // ── Handlers — CV upload ──────────────────────────────────────
+  // CV Upload
   const handleUploadClick = () => {
     setUploadError("");
     fileInputRef.current?.click();
@@ -317,7 +313,7 @@ export default function CodexHubProfilePage() {
     }
   };
 
-  // ── Handlers — skills ─────────────────────────────────────────
+  // Skills
   const handleAddSkill = () => {
     const trimmed = newSkill.trim();
     if (!trimmed) return;
@@ -350,7 +346,7 @@ export default function CodexHubProfilePage() {
     }
   };
 
-  // ── Handlers — work experience ────────────────────────────────
+  // work experience 
   const handleExperienceChange = (field, value) =>
     setExperienceForm((prev) => ({ ...prev, [field]: value }));
 
@@ -490,7 +486,7 @@ export default function CodexHubProfilePage() {
     }
   };
 
-  // ── Guards ────────────────────────────────────────────────────
+  
   if (!profileLoaded)
     return <div className="cxprofile-loading">Loading profile…</div>;
 
@@ -529,7 +525,7 @@ export default function CodexHubProfilePage() {
           <div className="cxprofile-notice--warning">{profileNotice}</div>
         )}
 
-        {/* ── Profile header card ── */}
+        {/*  Profile header */}
         <div className="cxprofile-header-card">
           <div className="cxprofile-header-info">
             <SectionHeading label="Profile" />
@@ -586,7 +582,7 @@ export default function CodexHubProfilePage() {
           />
         </div>
 
-        {/* ── Main grid ── */}
+        
         <div className="cxprofile-grid">
           {/* Left column */}
           <div className="cxprofile-main-col">
@@ -674,37 +670,6 @@ export default function CodexHubProfilePage() {
               </div>
             </section>
 
-            <section className="cxprofile-card">
-              <SectionHeading label="Saved Jobs" />
-              {savedJobs.length ? (
-                <div className="cxprofile-saved-list">
-                  {savedJobs.slice(0, 4).map((job) => (
-                    <div
-                      key={job.id || job.title}
-                      className="cxprofile-saved-item"
-                    >
-                      <p className="cxprofile-saved-title">{job.title}</p>
-                      <p className="cxprofile-saved-sub">
-                        {job.company_name || "Employer"} ·{" "}
-                        {job.location || "Remote"}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="cxprofile-muted">
-                  Save jobs to keep track of roles you want to apply to later.
-                </p>
-              )}
-              <Link
-                to="/codexhub/jobs"
-                className="codexhub-btn codexhub-btn--blue"
-                style={{ marginTop: 16, display: "inline-flex" }}
-              >
-                Browse Jobs
-              </Link>
-            </section>
-
             <ApplicationsSection
               applications={applications}
               fallbackApplications={fallbackApplications}
@@ -715,110 +680,92 @@ export default function CodexHubProfilePage() {
         </div>
       </div>
 
-      {/* ══════════════════════════════════════════
-          Edit Profile Modal
-      ══════════════════════════════════════════ */}
+
+
+              {/* Modal */}
       {isEditing && (
-        <div className="cxprofile-modal-backdrop">
-          <div className="cxprofile-modal">
-            <div className="cxprofile-modal-bar" />
-            <div className="cxprofile-modal-inner">
-              <div className="cxprofile-modal-header">
-                <h2 className="cxprofile-modal-title">Edit Profile</h2>
-                <button
-                  onClick={handleCancel}
-                  className="codexhub-btn codexhub-btn--ghost"
-                  style={{ padding: "8px 16px", fontSize: 13 }}
-                >
-                  Close
-                </button>
-              </div>
-
-              <div className="cxprofile-form-grid">
-                {[
-                  { label: "First name", field: "first_name", type: "text" },
-                  { label: "Last name", field: "last_name", type: "text" },
-                ].map(({ label, field, type }) => (
-                  <label key={field} className="cxprofile-form-label">
-                    {label}
-                    <input
-                      type={type}
-                      value={formState[field]}
-                      onChange={(e) => handleFieldChange(field, e.target.value)}
-                      className="cxprofile-input"
-                    />
-                  </label>
-                ))}
-
-                <label className="cxprofile-form-label cxprofile-form-label--full">
-                  Headline
-                  <input
-                    type="text"
-                    value={formState.headline}
-                    onChange={(e) =>
-                      handleFieldChange("headline", e.target.value)
-                    }
-                    className="cxprofile-input"
-                  />
-                </label>
-
-                <label className="cxprofile-form-label cxprofile-form-label--full">
-                  Summary
-                  <textarea
-                    rows={5}
-                    value={formState.summary}
-                    onChange={(e) =>
-                      handleFieldChange("summary", e.target.value)
-                    }
-                    className="cxprofile-input cxprofile-input--textarea"
-                  />
-                </label>
-
-                {[
-                  { label: "Email", field: "email", type: "email" },
-                  { label: "Phone", field: "phone", type: "tel" },
-                  { label: "LinkedIn", field: "linkedin_url", type: "url" },
-                  { label: "Portfolio", field: "portfolio_url", type: "url" },
-                  { label: "City", field: "city", type: "text" },
-                  { label: "State", field: "state", type: "text" },
-                  { label: "Country", field: "country", type: "text" },
-                ].map(({ label, field, type }) => (
-                  <label key={field} className="cxprofile-form-label">
-                    {label}
-                    <input
-                      type={type}
-                      value={formState[field]}
-                      onChange={(e) => handleFieldChange(field, e.target.value)}
-                      className="cxprofile-input"
-                    />
-                  </label>
-                ))}
-              </div>
-
-              {profileSaveError && (
-                <p
-                  className="cxprofile-notice--error"
-                  style={{ marginTop: 12 }}
-                >
-                  {profileSaveError}
-                </p>
-              )}
-
-              <div className="cxprofile-modal-footer">
-                <button
-                  onClick={handleSave}
-                  className="codexhub-btn codexhub-btn--blue"
-                >
-                  Save changes
-                </button>
-                <button
-                  onClick={handleCancel}
-                  className="codexhub-btn codexhub-btn--ghost"
-                >
-                  Cancel
-                </button>
-              </div>
+        <div
+          className="modal-backdrop"
+          onClick={(e) => { if (e.target === e.currentTarget) handleCancel() }}
+        >
+          <div className="modal" style={{ maxWidth: 640 }}>
+            <div className="modal-header">
+              <h2 className="modal-title">Edit Profile</h2>
+              <button onClick={handleCancel} className="modal-close" type="button">
+                <X size={15} />
+              </button>
             </div>
+            <form onSubmit={(e) => { e.preventDefault(); handleSave() }}>
+              <div className="modal-body">
+                <div className="form-grid-2">
+                  {[
+                    { label: "First name", field: "first_name", type: "text" },
+                    { label: "Last name", field: "last_name", type: "text" },
+                  ].map(({ label, field, type }) => (
+                    <div key={field} className="form-group">
+                      <label className="form-label">{label}</label>
+                      <input
+                        type={type}
+                        value={formState[field]}
+                        onChange={(e) => handleFieldChange(field, e.target.value)}
+                        className="form-input"
+                      />
+                    </div>
+                  ))}
+
+                  <div className="form-group" style={{ gridColumn: "1 / -1" }}>
+                    <label className="form-label">Headline</label>
+                    <input
+                      type="text"
+                      value={formState.headline}
+                      onChange={(e) => handleFieldChange("headline", e.target.value)}
+                      className="form-input"
+                    />
+                  </div>
+
+                  <div className="form-group" style={{ gridColumn: "1 / -1" }}>
+                    <label className="form-label">Summary</label>
+                    <textarea
+                      rows={4}
+                      value={formState.summary}
+                      onChange={(e) => handleFieldChange("summary", e.target.value)}
+                      className="form-textarea"
+                    />
+                  </div>
+
+                  {[
+                    { label: "Email", field: "email", type: "email" },
+                    { label: "Phone", field: "phone", type: "tel" },
+                    { label: "LinkedIn", field: "linkedin_url", type: "url" },
+                    { label: "Portfolio", field: "portfolio_url", type: "url" },
+                    { label: "City", field: "city", type: "text" },
+                    { label: "State", field: "state", type: "text" },
+                    { label: "Country", field: "country", type: "text" },
+                  ].map(({ label, field, type }) => (
+                    <div key={field} className="form-group">
+                      <label className="form-label">{label}</label>
+                      <input
+                        type={type}
+                        value={formState[field]}
+                        onChange={(e) => handleFieldChange(field, e.target.value)}
+                        className="form-input"
+                      />
+                    </div>
+                  ))}
+                </div>
+
+                {profileSaveError && (
+                  <p className="form-error">{profileSaveError}</p>
+                )}
+              </div>
+
+              <div className="modal-footer">
+                <Button type="button" variant="outline" onClick={handleCancel}>
+                  Cancel
+                </Button>
+                <Button type="submit">Save changes</Button>
+              </div>
+            </form>
           </div>
         </div>
       )}

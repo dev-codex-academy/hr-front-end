@@ -24,7 +24,7 @@ const ACTIONS = [
   { label: 'My Courses', desc: 'Lessons & assignments', Icon: GraduationCap, color: '#F97316', bg: '#FFF7ED', href: 'https://moodle.mycodexacademy.com/login/index.php?lang=en_us', external: true },
   { label: 'Career Center', desc: 'Browse open roles', Icon: Briefcase, color: '#4E89BD', bg: '#EFF6FF', to: '/codexhub/jobs' },
   { label: 'My Profile', desc: 'Resume & portfolio', Icon: User, color: '#8B5CF6', bg: '#F5F3FF', to: '/profile' },
-  { label: 'Applications', desc: 'Track your pipeline', Icon: FileTextIcon, color: '#64748B', bg: '#F8FAFC', to: '/job-applications' },
+  { label: 'Applications', desc: 'Track your pipeline', Icon: FileTextIcon, color: '#64748B', bg: '#F8FAFC', to: '/codexhub/applications' },
   { label: 'My Instructors', desc: 'Meet your teachers', Icon: Star, color: '#D97706', bg: '#FEF3C7', to: '/codexhub/instructors' },
 ]
 
@@ -199,7 +199,7 @@ export default function StudentsPage({ userName }) {
     <div className="codexhub-students">
       <div className="students-page-shell">
         <header className="students-page-hero">
-          <div className="students-page-hero__avatar">{initials}</div>
+          <Link to="/codexhub/profile" className="students-page-hero__avatar">{initials}</Link>
           <div className="students-page-hero__copy">
             <SectionHeading label="Student Dashboard" />
             <h1 className="students-page-hero__title">Welcome back, {displayName}!</h1>
@@ -208,10 +208,10 @@ export default function StudentsPage({ userName }) {
             </p>
           </div>
           {unreadCount > 0 && (
-            <div className="students-page-hero__badge">
+            <Link to="/notifications" className="students-page-hero__badge">
               <Bell size={13} strokeWidth={2.5} />
               {unreadCount} new
-            </div>
+            </Link>
           )}
         </header>
 

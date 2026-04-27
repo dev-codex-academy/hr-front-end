@@ -7,6 +7,8 @@ import taService from '@/services/taService'
 import applicantService from '@/services/applicantService'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { SectionHeading } from '../codexhub/components/SectionHeading'
+import './TALogsPage.css'
 
 /* ── helpers ─────────────────────────────────────────────────── */
 function calcHours(start, end) {
@@ -29,8 +31,8 @@ function fmtDate(d) {
 }
 
 const TYPE_BADGE = {
-  class_hours: { label: 'Class',       color: '#1D4ED8', bg: '#DBEAFE' },
-  task_review: { label: 'Task Review', color: '#065F46', bg: '#D1FAE5' },
+  class_hours: { label: 'Class',       color: '#4E89BD', bg: '#EFF6FF' },
+  task_review: { label: 'Task Review', color: '#3d6e98', bg: '#DBEAFE' },
 }
 
 const lStyle = { fontSize: '12px', fontWeight: 600, color: '#64748B', display: 'block', marginBottom: '5px' }
@@ -143,7 +145,7 @@ function StudentSearch({ value, selectedName, onChange }) {
               onMouseEnter={e => e.currentTarget.style.background = '#F8FAFC'}
               onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
             >
-              <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'linear-gradient(135deg,#7C3AED,#6D28D9)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 800, color: 'white', flexShrink: 0 }}>
+              <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'linear-gradient(135deg,#3d6e98,#4E89BD)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 800, color: 'white', flexShrink: 0 }}>
                 {(s.full_name?.[0] ?? '?').toUpperCase()}
               </div>
               <div style={{ minWidth: 0 }}>
@@ -193,9 +195,9 @@ function HoursModal({ initial, onClose, onSaved }) {
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 50, background: 'rgba(0,0,0,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
       <div style={{ background: 'white', borderRadius: '16px', width: '100%', maxWidth: '520px', boxShadow: '0 20px 60px rgba(0,0,0,0.25)', overflow: 'hidden' }}>
-        <div style={{ padding: '18px 24px', borderBottom: '1px solid #E2E8F0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <h2 style={{ fontSize: '17px', fontWeight: 700, color: '#1E293B', margin: 0 }}>{initial?.id ? 'Edit Log' : 'Log Hours'}</h2>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94A3B8' }}><X size={20} /></button>
+        <div style={{ background: 'linear-gradient(135deg,#3d6e98 0%,#4E89BD 100%)', padding: '18px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <h2 style={{ fontSize: '17px', fontWeight: 700, color: 'white', margin: 0 }}>{initial?.id ? 'Edit Log' : 'Log Hours'}</h2>
+          <button onClick={onClose} style={{ background: 'rgba(255,255,255,0.2)', border: 'none', borderRadius: '50%', width: '28px', height: '28px', cursor: 'pointer', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><X size={15} /></button>
         </div>
         <form onSubmit={submit} style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
           <div>
@@ -224,7 +226,7 @@ function HoursModal({ initial, onClose, onSaved }) {
             </div>
           </div>
           {total > 0 && (
-            <div style={{ background: '#EFF6FF', borderRadius: '8px', padding: '8px 14px', fontSize: '13px', color: '#1D4ED8', fontWeight: 600 }}>
+            <div style={{ background: '#EFF6FF', borderRadius: '8px', padding: '8px 14px', fontSize: '13px', color: '#4E89BD', fontWeight: 600 }}>
               Total: {total.toFixed(2)} hrs
             </div>
           )}
@@ -277,9 +279,9 @@ function MentorshipModal({ initial, onClose, onSaved }) {
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 50, background: 'rgba(0,0,0,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
       <div style={{ background: 'white', borderRadius: '16px', width: '100%', maxWidth: '520px', boxShadow: '0 20px 60px rgba(0,0,0,0.25)', overflow: 'hidden' }}>
-        <div style={{ padding: '18px 24px', borderBottom: '1px solid #E2E8F0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <h2 style={{ fontSize: '17px', fontWeight: 700, color: '#1E293B', margin: 0 }}>{initial?.id ? 'Edit Mentorship' : 'New Mentorship'}</h2>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94A3B8' }}><X size={20} /></button>
+        <div style={{ background: 'linear-gradient(135deg,#AD545B 0%,#E06C75 100%)', padding: '18px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <h2 style={{ fontSize: '17px', fontWeight: 700, color: 'white', margin: 0 }}>{initial?.id ? 'Edit Mentorship' : 'New Mentorship'}</h2>
+          <button onClick={onClose} style={{ background: 'rgba(255,255,255,0.2)', border: 'none', borderRadius: '50%', width: '28px', height: '28px', cursor: 'pointer', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><X size={15} /></button>
         </div>
         <form onSubmit={submit} style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
@@ -311,7 +313,7 @@ function MentorshipModal({ initial, onClose, onSaved }) {
             </div>
           </div>
           {total > 0 && (
-            <div style={{ background: '#F0FDF4', borderRadius: '8px', padding: '8px 14px', fontSize: '13px', color: '#065F46', fontWeight: 600 }}>
+            <div style={{ background: '#EFF6FF', borderRadius: '8px', padding: '8px 14px', fontSize: '13px', color: '#4E89BD', fontWeight: 600 }}>
               Total: {total.toFixed(2)} hrs
             </div>
           )}
@@ -390,21 +392,21 @@ export default function TALogsPage() {
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
 
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
-        <div>
-          <h1 style={{ fontSize: '22px', fontWeight: 800, color: '#1E293B', margin: 0 }}>My Logs & Reports</h1>
-          <p style={{ fontSize: '13px', color: '#64748B', margin: '4px 0 0' }}>Track your hours and mentorships</p>
+      <div className="ta-logs-header-card">
+        <div className="ta-logs-header-card__copy">
+          <SectionHeading label="TA Dashboard" />
+          <h1 className="ta-logs-header-card__title">My Logs & Reports</h1>
+          <p className="ta-logs-header-card__subtitle">Track your class hours and mentorships</p>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-          <Filter size={14} style={{ color: '#64748B' }} />
+        <div className="ta-logs-header-card__filter">
+          <Filter size={14} style={{ color: 'rgba(255,255,255,0.7)' }} />
           <input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)}
-            style={{ border: '1px solid #E2E8F0', borderRadius: '8px', padding: '7px 10px', fontSize: '13px', outline: 'none', background: 'white' }} />
-          <span style={{ color: '#94A3B8', fontSize: '13px' }}>to</span>
+            className="ta-logs-filter-input" />
+          <span className="ta-logs-filter-sep">to</span>
           <input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)}
-            style={{ border: '1px solid #E2E8F0', borderRadius: '8px', padding: '7px 10px', fontSize: '13px', outline: 'none', background: 'white' }} />
+            className="ta-logs-filter-input" />
           {(dateFrom || dateTo) && (
-            <button onClick={() => { setDateFrom(''); setDateTo('') }}
-              style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94A3B8', fontSize: '12px', textDecoration: 'underline' }}>
+            <button onClick={() => { setDateFrom(''); setDateTo('') }} className="ta-logs-filter-clear">
               Clear
             </button>
           )}
@@ -414,11 +416,16 @@ export default function TALogsPage() {
       {/* Summary chips */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
         {[
-          { label: 'Class Hours',   val: totalClassHrs.toFixed(1), color: '#1D4ED8', bg: '#DBEAFE' },
-          { label: 'Task Review',   val: totalTaskHrs.toFixed(1),  color: '#065F46', bg: '#D1FAE5' },
-          { label: 'Mentorships',   val: totalMentHrs.toFixed(1),  color: '#7C3AED', bg: '#EDE9FE' },
+          { label: 'Class Hours', val: totalClassHrs.toFixed(1), color: '#4E89BD', bg: '#EFF6FF' },
+          { label: 'Task Review', val: totalTaskHrs.toFixed(1),  color: '#3d6e98', bg: '#DBEAFE' },
+          { label: 'Mentorships', val: totalMentHrs.toFixed(1),  color: '#E06C75', bg: '#FFF0F1' },
         ].map(({ label, val, color, bg }) => (
-          <div key={label} style={{ ...cardStyle, padding: '16px 20px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div
+            key={label}
+            style={{ ...cardStyle, padding: '16px 20px', display: 'flex', alignItems: 'center', gap: '12px', transition: 'transform 0.2s, box-shadow 0.2s' }}
+            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.1)' }}
+            onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.05)' }}
+          >
             <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
               <Clock size={18} strokeWidth={2} style={{ color }} />
             </div>
@@ -439,9 +446,8 @@ export default function TALogsPage() {
           {/* Hours Logs */}
           <div style={cardStyle}>
             <div style={{ padding: '14px 18px', borderBottom: '1px solid #F1F5F9', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
-                <Clock size={15} strokeWidth={2} style={{ color: '#1D4ED8' }} />
-                <span style={{ fontWeight: 700, fontSize: '14px', color: '#1E293B' }}>Hours Logs</span>
+              <div className="ta-logs-card-heading">
+                <SectionHeading label="Hours Logs" />
                 <span style={{ fontSize: '11px', color: '#94A3B8' }}>({hoursLogs.length})</span>
               </div>
               <button onClick={() => { setEditing(null); setModal('hours') }}
@@ -483,13 +489,12 @@ export default function TALogsPage() {
           {/* Mentorships */}
           <div style={cardStyle}>
             <div style={{ padding: '14px 18px', borderBottom: '1px solid #F1F5F9', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
-                <Users size={15} strokeWidth={2} style={{ color: '#7C3AED' }} />
-                <span style={{ fontWeight: 700, fontSize: '14px', color: '#1E293B' }}>Mentorships</span>
+              <div className="ta-logs-card-heading">
+                <SectionHeading label="Mentorships" />
                 <span style={{ fontSize: '11px', color: '#94A3B8' }}>({mentorships.length})</span>
               </div>
               <button onClick={() => { setEditing(null); setModal('mentorship') }}
-                style={{ display: 'flex', alignItems: 'center', gap: '4px', background: '#7C3AED', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '12px', color: 'white', fontWeight: 600, padding: '6px 12px' }}>
+                style={{ display: 'flex', alignItems: 'center', gap: '4px', background: '#E06C75', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '12px', color: 'white', fontWeight: 600, padding: '6px 12px' }}>
                 <Plus size={13} /> New
               </button>
             </div>
@@ -500,7 +505,7 @@ export default function TALogsPage() {
               </div>
             ) : mentorships.map(m => (
               <div key={m.id} style={{ padding: '12px 18px', borderBottom: '1px solid #F8FAFC', display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
-                <div style={{ width: '34px', height: '34px', borderRadius: '50%', flexShrink: 0, background: 'linear-gradient(135deg,#7C3AED,#6D28D9)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 800, color: 'white' }}>
+                <div style={{ width: '34px', height: '34px', borderRadius: '50%', flexShrink: 0, background: 'linear-gradient(135deg,#3d6e98,#4E89BD)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 800, color: 'white' }}>
                   {(m.student_name?.[0] ?? '?').toUpperCase()}
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>

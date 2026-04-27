@@ -24,6 +24,7 @@ import ProfileGate from '@/pages/profile/ProfileGate'
 import StudentsPage from '@/pages/codexhub/StudentsPage'
 import CodexHubProfilePage from '@/pages/codexhub/CodexHubProfilePage'
 import StudentJobsPage from '@/pages/codexhub/StudentJobsPage'
+import StudentApplicationsPage from '@/pages/codexhub/StudentApplicationsPage'
 import ApplyPage from '@/pages/codexhub/ApplyPage'
 import StudentSpotlightPage from '@/pages/community/StudentSpotlightPage'
 import InstructorsPage from '@/pages/codexhub/InstructorsPage'
@@ -60,6 +61,7 @@ export default function AppRouter() {
         <Route path="/profile" element={<ProfileGate />} />
         <Route path="/codexhub/students" element={<StudentsPage />} />
         <Route path="/codexhub/jobs" element={<StudentJobsPage />} />
+        <Route path="/codexhub/applications" element={<StudentApplicationsPage />} />
         <Route path="/codexhub/profile" element={<CodexHubProfilePage />} />
         <Route path="/skills" element={<SkillsPage />} />
         <Route path="/education" element={<EducationPage />} />

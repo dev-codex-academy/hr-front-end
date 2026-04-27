@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { useForm } from 'react-hook-form'
-import { Plus, Pencil, Trash2, Briefcase } from 'lucide-react'
+import { Plus, Pencil, Trash2, Briefcase, Search } from 'lucide-react'
 import Swal from 'sweetalert2'
 import positionService from '@/services/positionService'
 import { Button } from '@/components/ui/button'
@@ -11,6 +11,8 @@ import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@
 import { Card, CardContent } from '@/components/ui/card'
 import { SpinnerOverlay } from '@/components/ui/spinner'
 import FormModal from '@/components/common/FormModal'
+import { useTablePage } from '@/hooks/useTablePage'
+import { Pagination } from '@/components/ui/pagination'
 
 export default function PositionsPage() {
   const [positions, setPositions] = useState([])
@@ -20,6 +22,7 @@ export default function PositionsPage() {
   const [editing, setEditing] = useState(null)
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm()
+  const { search, setSearch, filters, setFilter, page, setPage, paginate } = useTablePage()
 
   const fetchData = async () => {
     setLoading(true)
@@ -35,14 +38,23 @@ export default function PositionsPage() {
 
   useEffect(() => { fetchData() }, [])
 
+  const filtered = useMemo(() => {
+    let list = positions
+    if (search) {
+      const q = search.toLowerCase()
+      list = list.filter(p => p.title?.toLowerCase().includes(q))
+    }
+    if (filters.active === 'active') list = list.filter(p => p.is_active)
+    if (filters.active === 'inactive') list = list.filter(p => !p.is_active)
+    return list
+  }, [positions, search, filters])
+
+  const { rows, totalPages, totalRows } = paginate(filtered)
+
   const openNew = () => { setEditing(null); reset({}); setModalOpen(true) }
   const openEdit = (pos) => {
     setEditing(pos)
-    reset({
-      title: pos.title,
-      description: pos.description,
-      is_active: pos.is_active,
-    })
+    reset({ title: pos.title, description: pos.description, is_active: pos.is_active })
     setModalOpen(true)
   }
 
@@ -69,7 +81,7 @@ export default function PositionsPage() {
 
   const handleDelete = async (pos) => {
     const result = await Swal.fire({
-      title: 'Delete position??',
+      title: 'Delete position?',
       text: `"${pos.title}" will be permanently removed.`,
       icon: 'warning',
       showCancelButton: true,
@@ -104,6 +116,27 @@ export default function PositionsPage() {
         </Button>
       </div>
 
+      <div className="table-filters">
+        <div className="table-filters__search">
+          <Search size={15} className="table-filters__search-icon" />
+          <input
+            className="table-filters__search-input"
+            placeholder="Search by title…"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+          />
+        </div>
+        <select
+          className="table-filters__select"
+          value={filters.active || ''}
+          onChange={e => setFilter('active', e.target.value)}
+        >
+          <option value="">All Status</option>
+          <option value="active">Active</option>
+          <option value="inactive">Inactive</option>
+        </select>
+      </div>
+
       <Card>
         <CardContent>
           {loading ? (
@@ -119,18 +152,24 @@ export default function PositionsPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {positions.length === 0 ? (
+                {rows.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={4}>
                       <div className="empty-state">
                         <Briefcase strokeWidth={1.5} />
-                        <p className="empty-state-title">No positions defined</p>
-                        <p className="empty-state-desc">Define positions and salary bands for your organization</p>
+                        <p className="empty-state-title">
+                          {positions.length === 0 ? 'No positions defined' : 'No positions match your filter'}
+                        </p>
+                        <p className="empty-state-desc">
+                          {positions.length === 0
+                            ? 'Define positions and salary bands for your organization'
+                            : 'Try adjusting your search or filter.'}
+                        </p>
                       </div>
                     </TableCell>
                   </TableRow>
                 ) : (
-                  positions.map((pos) => (
+                  rows.map((pos) => (
                     <TableRow key={pos.id}>
                       <TableCell>{pos.title}</TableCell>
                       <TableCell>{pos.description || '—'}</TableCell>
@@ -153,6 +192,8 @@ export default function PositionsPage() {
           )}
         </CardContent>
       </Card>
+
+      <Pagination page={page} totalPages={totalPages} totalRows={totalRows} onPageChange={setPage} />
 
       <FormModal
         open={modalOpen}

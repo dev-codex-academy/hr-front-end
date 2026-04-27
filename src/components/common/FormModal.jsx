@@ -19,7 +19,7 @@ export default function FormModal({
         <div className="modal-header">
           <h2 className="modal-title">{title}</h2>
           <button className="modal-close" onClick={() => onOpenChange(false)} type="button">
-            <X size={16} />
+            <X size={15} />
           </button>
         </div>
         <form onSubmit={onSubmit}>

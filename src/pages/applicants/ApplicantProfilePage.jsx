@@ -12,7 +12,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { SpinnerOverlay } from '@/components/ui/spinner'
 
-/* ── helpers ── */
+/*  helpers  */
 const fmtPeriod = (start, end, isCurrent) => {
   if (!start) return '—'
   const s = new Date(start).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })

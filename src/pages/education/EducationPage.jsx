@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { useForm } from 'react-hook-form'
-import { Plus, Pencil, Trash2, GraduationCap } from 'lucide-react'
+import { Plus, Pencil, Trash2, GraduationCap, Search } from 'lucide-react'
 import Swal from 'sweetalert2'
 import educationService from '@/services/educationService'
 import applicantService from '@/services/applicantService'
@@ -12,6 +12,8 @@ import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@
 import { Card, CardContent } from '@/components/ui/card'
 import { SpinnerOverlay } from '@/components/ui/spinner'
 import FormModal from '@/components/common/FormModal'
+import { useTablePage } from '@/hooks/useTablePage'
+import { Pagination } from '@/components/ui/pagination'
 
 const DEGREE_TYPES = [
   'high_school', 'associate', 'bachelor', 'master',
@@ -51,14 +53,12 @@ export default function EducationPage() {
   const [editing, setEditing] = useState(null)
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm()
+  const { search, setSearch, filters, setFilter, page, setPage, paginate } = useTablePage()
 
   const fetchData = async () => {
     setLoading(true)
     try {
-      const [eduRes, appRes] = await Promise.all([
-        educationService.getAll(),
-        applicantService.getAll(),
-      ])
+      const [eduRes, appRes] = await Promise.all([educationService.getAll(), applicantService.getAll()])
       setRecords(eduRes.data.results ?? eduRes.data)
       setApplicants(appRes.data.results ?? appRes.data)
     } catch {
@@ -69,6 +69,21 @@ export default function EducationPage() {
   }
 
   useEffect(() => { fetchData() }, [])
+
+  const filtered = useMemo(() => {
+    let list = records
+    if (search) {
+      const q = search.toLowerCase()
+      list = list.filter(r =>
+        r.applicant_name?.toLowerCase().includes(q) ||
+        r.institution?.toLowerCase().includes(q)
+      )
+    }
+    if (filters.degree_type) list = list.filter(r => r.degree_type === filters.degree_type)
+    return list
+  }, [records, search, filters])
+
+  const { rows, totalPages, totalRows } = paginate(filtered)
 
   const openNew = () => { setEditing(null); reset({}); setModalOpen(true) }
   const openEdit = (rec) => {
@@ -90,11 +105,7 @@ export default function EducationPage() {
   const onSubmit = async (data) => {
     setSaving(true)
     try {
-      const payload = {
-        ...data,
-        end_date: data.end_date || null,
-        gpa: data.gpa || null,
-      }
+      const payload = { ...data, end_date: data.end_date || null, gpa: data.gpa || null }
       if (editing) {
         await educationService.update(editing.id, payload)
       } else {
@@ -149,6 +160,26 @@ export default function EducationPage() {
         </Button>
       </div>
 
+      <div className="table-filters">
+        <div className="table-filters__search">
+          <Search size={15} className="table-filters__search-icon" />
+          <input
+            className="table-filters__search-input"
+            placeholder="Search by applicant or institution…"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+          />
+        </div>
+        <select
+          className="table-filters__select"
+          value={filters.degree_type || ''}
+          onChange={e => setFilter('degree_type', e.target.value)}
+        >
+          <option value="">All Degrees</option>
+          {DEGREE_TYPES.map(d => <option key={d} value={d}>{DEGREE_LABELS[d]}</option>)}
+        </select>
+      </div>
+
       <Card>
         <CardContent>
           {loading ? <SpinnerOverlay /> : (
@@ -165,17 +196,23 @@ export default function EducationPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {records.length === 0 ? (
+                {rows.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={7}>
                       <div className="empty-state">
                         <GraduationCap strokeWidth={1.5} />
-                        <p className="empty-state-title">No education records yet</p>
-                        <p className="empty-state-desc">Add academic background for your applicants</p>
+                        <p className="empty-state-title">
+                          {records.length === 0 ? 'No education records yet' : 'No records match your filter'}
+                        </p>
+                        <p className="empty-state-desc">
+                          {records.length === 0
+                            ? 'Add academic background for your applicants'
+                            : 'Try adjusting your search or degree filter.'}
+                        </p>
                       </div>
                     </TableCell>
                   </TableRow>
-                ) : records.map(rec => (
+                ) : rows.map(rec => (
                   <TableRow key={rec.id}>
                     <TableCell>{rec.applicant_name}</TableCell>
                     <TableCell>{rec.institution}</TableCell>
@@ -207,6 +244,8 @@ export default function EducationPage() {
         </CardContent>
       </Card>
 
+      <Pagination page={page} totalPages={totalPages} totalRows={totalRows} onPageChange={setPage} />
+
       <FormModal
         open={modalOpen}
         onOpenChange={setModalOpen}
@@ -216,10 +255,7 @@ export default function EducationPage() {
       >
         <div className="form-group">
           <Label>Applicant *</Label>
-          <select
-            {...register('applicant', { required: 'Required' })}
-            className="form-select"
-          >
+          <select {...register('applicant', { required: 'Required' })} className="form-select">
             <option value="">— Select Applicant —</option>
             {applicants.map(a => (
               <option key={a.id} value={a.id}>
@@ -231,19 +267,14 @@ export default function EducationPage() {
         </div>
         <div className="form-group">
           <Label>Institution *</Label>
-          <Input
-            {...register('institution', { required: 'Required' })}
-            placeholder="e.g. MIT, Platzi, Coursera"
-          />
+          <Input {...register('institution', { required: 'Required' })} placeholder="e.g. MIT, Platzi, Coursera" />
           {errors.institution && <p className="form-error">{errors.institution.message}</p>}
         </div>
         <div className="form-grid-2">
           <div className="form-group">
             <Label>Degree Type</Label>
             <select {...register('degree_type')} className="form-select">
-              {DEGREE_TYPES.map(d => (
-                <option key={d} value={d}>{DEGREE_LABELS[d]}</option>
-              ))}
+              {DEGREE_TYPES.map(d => <option key={d} value={d}>{DEGREE_LABELS[d]}</option>)}
             </select>
           </div>
           <div className="form-group">

@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { useForm } from 'react-hook-form'
-import { Plus, Pencil, Trash2, ClipboardList } from 'lucide-react'
+import { Plus, Pencil, Trash2, ClipboardList, Search } from 'lucide-react'
 import Swal from 'sweetalert2'
 import jobService from '@/services/jobService'
 import positionService from '@/services/positionService'
@@ -12,9 +12,13 @@ import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@
 import { Card, CardContent } from '@/components/ui/card'
 import { SpinnerOverlay } from '@/components/ui/spinner'
 import FormModal from '@/components/common/FormModal'
+import { useTablePage } from '@/hooks/useTablePage'
+import { Pagination } from '@/components/ui/pagination'
 
 const JOB_TYPES = ['full_time', 'part_time', 'contract', 'intern', 'temporary']
 const JOB_STATUSES = ['open', 'in_process', 'paused', 'cancelled', 'closed']
+
+const label = (s) => s.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
 
 export default function JobsPage() {
   const [jobs, setJobs] = useState([])
@@ -26,14 +30,12 @@ export default function JobsPage() {
 
   const { register, handleSubmit, reset, watch, formState: { errors } } = useForm()
   const isInternal = watch('is_internal')
+  const { search, setSearch, filters, setFilter, page, setPage, paginate } = useTablePage()
 
   const fetchData = async () => {
     setLoading(true)
     try {
-      const [jobsRes, posRes] = await Promise.all([
-        jobService.getAll(),
-        positionService.getAll(),
-      ])
+      const [jobsRes, posRes] = await Promise.all([jobService.getAll(), positionService.getAll()])
       setJobs(jobsRes.data.results ?? jobsRes.data)
       setPositions(posRes.data.results ?? posRes.data)
     } catch {
@@ -44,6 +46,22 @@ export default function JobsPage() {
   }
 
   useEffect(() => { fetchData() }, [])
+
+  const filtered = useMemo(() => {
+    let list = jobs
+    if (search) {
+      const q = search.toLowerCase()
+      list = list.filter(j =>
+        j.title?.toLowerCase().includes(q) ||
+        (j.display_company || j.company || '').toLowerCase().includes(q)
+      )
+    }
+    if (filters.status) list = list.filter(j => j.status === filters.status)
+    if (filters.job_type) list = list.filter(j => j.job_type === filters.job_type)
+    return list
+  }, [jobs, search, filters])
+
+  const { rows, totalPages, totalRows } = paginate(filtered)
 
   const openNew = () => { setEditing(null); reset({}); setModalOpen(true) }
   const openEdit = (job) => {
@@ -119,6 +137,34 @@ export default function JobsPage() {
         </Button>
       </div>
 
+      <div className="table-filters">
+        <div className="table-filters__search">
+          <Search size={15} className="table-filters__search-icon" />
+          <input
+            className="table-filters__search-input"
+            placeholder="Search by title or company…"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+          />
+        </div>
+        <select
+          className="table-filters__select"
+          value={filters.status || ''}
+          onChange={e => setFilter('status', e.target.value)}
+        >
+          <option value="">All Status</option>
+          {JOB_STATUSES.map(s => <option key={s} value={s}>{label(s)}</option>)}
+        </select>
+        <select
+          className="table-filters__select"
+          value={filters.job_type || ''}
+          onChange={e => setFilter('job_type', e.target.value)}
+        >
+          <option value="">All Types</option>
+          {JOB_TYPES.map(t => <option key={t} value={t}>{label(t)}</option>)}
+        </select>
+      </div>
+
       <Card>
         <CardContent>
           {loading ? (
@@ -138,24 +184,30 @@ export default function JobsPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {jobs.length === 0 ? (
+                {rows.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={8}>
                       <div className="empty-state">
                         <ClipboardList strokeWidth={1.5} />
-                        <p className="empty-state-title">No job postings yet</p>
-                        <p className="empty-state-desc">Post your first job opening to start recruiting</p>
+                        <p className="empty-state-title">
+                          {jobs.length === 0 ? 'No job postings yet' : 'No jobs match your filter'}
+                        </p>
+                        <p className="empty-state-desc">
+                          {jobs.length === 0
+                            ? 'Post your first job opening to start recruiting'
+                            : 'Try adjusting your search or filter.'}
+                        </p>
                       </div>
                     </TableCell>
                   </TableRow>
                 ) : (
-                  jobs.map((job) => (
+                  rows.map((job) => (
                     <TableRow key={job.id}>
                       <TableCell>{job.title}</TableCell>
                       <TableCell>{job.position_display || job.position_title || '—'}</TableCell>
                       <TableCell>{job.display_company || job.company || '—'}</TableCell>
                       <TableCell>{job.is_internal ? 'Yes' : 'No'}</TableCell>
-                      <TableCell>{job.job_type?.replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase()) || '—'}</TableCell>
+                      <TableCell>{job.job_type ? label(job.job_type) : '—'}</TableCell>
                       <TableCell><StatusBadge status={job.status} /></TableCell>
                       <TableCell>{job.application_count ?? '—'}</TableCell>
                       <TableCell>
@@ -176,6 +228,8 @@ export default function JobsPage() {
           )}
         </CardContent>
       </Card>
+
+      <Pagination page={page} totalPages={totalPages} totalRows={totalRows} onPageChange={setPage} />
 
       <FormModal
         open={modalOpen}
@@ -230,44 +284,24 @@ export default function JobsPage() {
         <div className="form-grid-2">
           <div className="form-group">
             <Label>Job Type</Label>
-            <select
-              {...register('job_type')}
-              className="form-select"
-            >
-              {JOB_TYPES.map(t => (
-                <option key={t} value={t}>{t.replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase())}</option>
-              ))}
+            <select {...register('job_type')} className="form-select">
+              {JOB_TYPES.map(t => <option key={t} value={t}>{label(t)}</option>)}
             </select>
           </div>
           <div className="form-group">
             <Label>Status</Label>
-            <select
-              {...register('status')}
-              className="form-select"
-            >
-              {JOB_STATUSES.map(s => (
-                <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>
-              ))}
+            <select {...register('status')} className="form-select">
+              {JOB_STATUSES.map(s => <option key={s} value={s}>{label(s)}</option>)}
             </select>
           </div>
         </div>
         <div className="form-group">
           <Label>Description</Label>
-          <textarea
-            {...register('description')}
-            rows={3}
-            placeholder="Job description..."
-            className="form-textarea"
-          />
+          <textarea {...register('description')} rows={3} placeholder="Job description..." className="form-textarea" />
         </div>
         <div className="form-group">
           <Label>Requirements</Label>
-          <textarea
-            {...register('requirements')}
-            rows={3}
-            placeholder="Requirements..."
-            className="form-textarea"
-          />
+          <textarea {...register('requirements')} rows={3} placeholder="Requirements..." className="form-textarea" />
         </div>
       </FormModal>
     </div>

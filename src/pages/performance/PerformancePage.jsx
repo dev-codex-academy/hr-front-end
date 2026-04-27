@@ -1,35 +1,31 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { useForm } from 'react-hook-form'
-import { Plus, Pencil, Trash2, Star, TrendingUp } from 'lucide-react'
+import { Plus, Pencil, Trash2, Star, TrendingUp, Search } from 'lucide-react'
 import Swal from 'sweetalert2'
 import performanceService from '@/services/performanceService'
 import employeeService from '@/services/employeeService'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Badge } from '@/components/ui/badge'
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
 import { Card, CardContent } from '@/components/ui/card'
 import { SpinnerOverlay } from '@/components/ui/spinner'
 import FormModal from '@/components/common/FormModal'
+import { useTablePage } from '@/hooks/useTablePage'
+import { Pagination } from '@/components/ui/pagination'
 
 const REVIEW_TYPES = ['annual', 'mid_year', 'quarterly', 'probation', 'other']
-const RATING_COLORS = {
-  1: 'danger',
-  2: 'warning',
-  3: 'default',
-  4: 'active',
-  5: 'approved',
-}
+
+const label = (s) => s.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
 
 function RatingStars({ rating }) {
-  if (!rating) return <span style={{color:'#94a3b8'}}>—</span>
+  if (!rating) return <span style={{ color: '#94a3b8' }}>—</span>
   return (
-    <div style={{display:'flex',alignItems:'center',gap:'2px'}}>
-      {[1,2,3,4,5].map(n => (
-        <Star key={n} size={13} style={{color: n <= rating ? '#facc15' : '#e2e8f0', fill: n <= rating ? '#facc15' : 'none'}} />
+    <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
+      {[1, 2, 3, 4, 5].map(n => (
+        <Star key={n} size={13} style={{ color: n <= rating ? '#facc15' : '#e2e8f0', fill: n <= rating ? '#facc15' : 'none' }} />
       ))}
-      <span style={{marginLeft:'4px',fontSize:'12px',color:'#64748b'}}>{rating}/5</span>
+      <span style={{ marginLeft: '4px', fontSize: '12px', color: '#64748b' }}>{rating}/5</span>
     </div>
   )
 }
@@ -43,14 +39,12 @@ export default function PerformancePage() {
   const [editing, setEditing] = useState(null)
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm()
+  const { search, setSearch, filters, setFilter, page, setPage, paginate } = useTablePage()
 
   const fetchData = async () => {
     setLoading(true)
     try {
-      const [revRes, empRes] = await Promise.all([
-        performanceService.getAll(),
-        employeeService.getAll(),
-      ])
+      const [revRes, empRes] = await Promise.all([performanceService.getAll(), employeeService.getAll()])
       setReviews(revRes.data.results ?? revRes.data)
       setEmployees(empRes.data.results ?? empRes.data)
     } catch {
@@ -61,6 +55,21 @@ export default function PerformancePage() {
   }
 
   useEffect(() => { fetchData() }, [])
+
+  const filtered = useMemo(() => {
+    let list = reviews
+    if (search) {
+      const q = search.toLowerCase()
+      list = list.filter(r =>
+        r.employee_name?.toLowerCase().includes(q) ||
+        r.reviewer_name?.toLowerCase().includes(q)
+      )
+    }
+    if (filters.review_type) list = list.filter(r => r.review_type === filters.review_type)
+    return list
+  }, [reviews, search, filters])
+
+  const { rows, totalPages, totalRows } = paginate(filtered)
 
   const openNew = () => { setEditing(null); reset({}); setModalOpen(true) }
   const openEdit = (rev) => {
@@ -133,6 +142,26 @@ export default function PerformancePage() {
         </Button>
       </div>
 
+      <div className="table-filters">
+        <div className="table-filters__search">
+          <Search size={15} className="table-filters__search-icon" />
+          <input
+            className="table-filters__search-input"
+            placeholder="Search by employee or reviewer…"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+          />
+        </div>
+        <select
+          className="table-filters__select"
+          value={filters.review_type || ''}
+          onChange={e => setFilter('review_type', e.target.value)}
+        >
+          <option value="">All Types</option>
+          {REVIEW_TYPES.map(t => <option key={t} value={t}>{label(t)}</option>)}
+        </select>
+      </div>
+
       <Card>
         <CardContent>
           {loading ? (
@@ -150,26 +179,28 @@ export default function PerformancePage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {reviews.length === 0 ? (
+                {rows.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={6}>
                       <div className="empty-state">
                         <TrendingUp strokeWidth={1.5} />
-                        <p className="empty-state-title">No reviews yet</p>
-                        <p className="empty-state-desc">Start tracking employee performance with reviews</p>
+                        <p className="empty-state-title">
+                          {reviews.length === 0 ? 'No reviews yet' : 'No reviews match your filter'}
+                        </p>
+                        <p className="empty-state-desc">
+                          {reviews.length === 0
+                            ? 'Start tracking employee performance with reviews'
+                            : 'Try adjusting your search or review type.'}
+                        </p>
                       </div>
                     </TableCell>
                   </TableRow>
                 ) : (
-                  reviews.map((rev) => (
+                  rows.map((rev) => (
                     <TableRow key={rev.id}>
                       <TableCell>{rev.employee_name || '—'}</TableCell>
                       <TableCell>{rev.reviewer_name || '—'}</TableCell>
-                      <TableCell>
-                        {rev.review_type
-                          ? rev.review_type.replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase())
-                          : '—'}
-                      </TableCell>
+                      <TableCell>{rev.review_type ? label(rev.review_type) : '—'}</TableCell>
                       <TableCell>{rev.review_date || '—'}</TableCell>
                       <TableCell><RatingStars rating={rev.overall_rating} /></TableCell>
                       <TableCell>
@@ -191,6 +222,8 @@ export default function PerformancePage() {
         </CardContent>
       </Card>
 
+      <Pagination page={page} totalPages={totalPages} totalRows={totalRows} onPageChange={setPage} />
+
       <FormModal
         open={modalOpen}
         onOpenChange={setModalOpen}
@@ -201,30 +234,20 @@ export default function PerformancePage() {
         <div className="form-grid-2">
           <div className="form-group">
             <Label>Employee *</Label>
-            <select
-              {...register('employee', { required: 'Required' })}
-              className="form-select"
-            >
+            <select {...register('employee', { required: 'Required' })} className="form-select">
               <option value="">— Select Employee —</option>
               {employees.map(e => (
-                <option key={e.id} value={e.id}>
-                  {e.full_name || `${e.first_name} ${e.last_name}`}
-                </option>
+                <option key={e.id} value={e.id}>{e.full_name || `${e.first_name} ${e.last_name}`}</option>
               ))}
             </select>
             {errors.employee && <p className="form-error">{errors.employee.message}</p>}
           </div>
           <div className="form-group">
             <Label>Reviewer (Employee)</Label>
-            <select
-              {...register('reviewer')}
-              className="form-select"
-            >
+            <select {...register('reviewer')} className="form-select">
               <option value="">— None —</option>
               {employees.map(e => (
-                <option key={e.id} value={e.id}>
-                  {e.full_name || `${e.first_name} ${e.last_name}`}
-                </option>
+                <option key={e.id} value={e.id}>{e.full_name || `${e.first_name} ${e.last_name}`}</option>
               ))}
             </select>
           </div>
@@ -232,13 +255,8 @@ export default function PerformancePage() {
         <div className="form-grid-2">
           <div className="form-group">
             <Label>Review Type *</Label>
-            <select
-              {...register('review_type', { required: 'Required' })}
-              className="form-select"
-            >
-              {REVIEW_TYPES.map(t => (
-                <option key={t} value={t}>{t.replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase())}</option>
-              ))}
+            <select {...register('review_type', { required: 'Required' })} className="form-select">
+              {REVIEW_TYPES.map(t => <option key={t} value={t}>{label(t)}</option>)}
             </select>
             {errors.review_type && <p className="form-error">{errors.review_type.message}</p>}
           </div>
@@ -264,21 +282,11 @@ export default function PerformancePage() {
         </div>
         <div className="form-group">
           <Label>Goals</Label>
-          <textarea
-            {...register('goals')}
-            rows={2}
-            placeholder="Goals for next period..."
-            className="form-textarea"
-          />
+          <textarea {...register('goals')} rows={2} placeholder="Goals for next period..." className="form-textarea" />
         </div>
         <div className="form-group">
           <Label>Comments</Label>
-          <textarea
-            {...register('comments')}
-            rows={3}
-            placeholder="General comments..."
-            className="form-textarea"
-          />
+          <textarea {...register('comments')} rows={3} placeholder="General comments..." className="form-textarea" />
         </div>
       </FormModal>
     </div>

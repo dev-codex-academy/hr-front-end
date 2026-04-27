@@ -82,11 +82,14 @@
   font-weight: 700;
 }
 
-.instructors-section {
-  margin-bottom: 32px;
+.instructors-sections-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+  align-items: start;
 }
 
-.instructors-section:last-of-type {
+.instructors-section {
   margin-bottom: 0;
 }
 
@@ -121,6 +124,129 @@
   gap: 16px;
 }
 
+/* ── Instructor detail modal ── */
+.instructor-detail-dialog {
+  max-width: 480px !important;
+  max-height: 88vh;
+  overflow: hidden;
+  display: flex !important;
+  flex-direction: column;
+  padding: 0 !important;
+  gap: 0 !important;
+  border-radius: 24px !important;
+  border: none !important;
+  box-shadow: 0 24px 56px rgba(15, 23, 42, 0.18) !important;
+}
+
+.instructor-detail-hero {
+  background: linear-gradient(135deg, #3d6e98 0%, #4e89bd 60%, #61afee 100%);
+  padding: 28px 28px 24px;
+  flex-shrink: 0;
+}
+
+.instructor-detail-hero__inner {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.instructor-detail-hero__name {
+  font-size: 20px;
+  font-weight: 800;
+  color: #ffffff;
+  margin: 0 0 7px;
+  line-height: 1.2;
+}
+
+.instructor-detail-hero__role {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 3px 12px;
+  border-radius: 20px;
+}
+
+.instructor-detail-hero__notes {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.8);
+  margin: 8px 0 0;
+  line-height: 1.5;
+  max-width: 280px;
+}
+
+/* White close button on gradient header */
+.instructor-detail-dialog > button {
+  color: rgba(255, 255, 255, 0.85) !important;
+  opacity: 1 !important;
+}
+
+.instructor-detail-dialog > button:hover {
+  color: #ffffff !important;
+}
+
+.instructor-detail-body {
+  overflow-y: auto;
+  padding: 22px 28px 26px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.instructor-detail-info {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.instructor-detail-calendly {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #3d6e98, #4e89bd);
+  color: #ffffff;
+  text-decoration: none;
+  border-radius: 10px;
+  padding: 11px 16px;
+  font-size: 14px;
+  font-weight: 700;
+  box-shadow: 0 4px 12px rgba(61, 110, 152, 0.3);
+  transition: opacity 0.15s;
+}
+
+.instructor-detail-calendly:hover {
+  opacity: 0.9;
+}
+
+.instructor-detail-skills-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin: 0 0 10px;
+}
+
+.instructor-detail-skills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.instructor-detail-skill-badge {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+
+@media (max-width: 900px) {
+  .instructors-sections-grid {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+}
+
 @media (max-width: 700px) {
   .instructors-header-card {
     padding: 20px 18px;
@@ -132,7 +258,137 @@
     justify-content: center;
   }
 
-  .instructors-section {
-    margin-bottom: 28px;
+  .instructor-detail-dialog {
+    max-width: 96vw !important;
+    border-radius: 20px !important;
   }
+
+  .instructor-detail-hero {
+    padding: 22px 20px 20px;
+  }
+
+  .instructor-detail-body {
+    padding: 20px;
+  }
+}
+
+/* ── Instructor Card ─────────────────────────────── */
+.instructor-card {
+  background: white;
+  border-radius: 16px;
+  border: 1px solid rgba(78, 137, 189, 0.12);
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(61, 110, 152, 0.08);
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+  display: flex;
+  flex-direction: column;
+}
+
+.instructor-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 28px rgba(61, 110, 152, 0.16);
+}
+
+.instructor-card__bar {
+  height: 5px;
+  flex-shrink: 0;
+}
+
+.instructor-card__body {
+  padding: 20px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.instructor-card__top {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.instructor-card__top-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.instructor-card__name {
+  font-size: 15px;
+  font-weight: 800;
+  color: #1e293b;
+  margin: 0 0 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.instructor-card__role-badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 20px;
+}
+
+.instructor-card__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.instructor-card__meta-row {
+  font-size: 12px;
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin: 0;
+}
+
+.instructor-card__meta-row--calendly {
+  color: #4e89bd;
+  font-weight: 600;
+}
+
+.instructor-card__skills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.instructor-card__skill-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 20px;
+}
+
+.instructor-card__skill-more {
+  font-size: 11px;
+  color: #94a3b8;
+  padding: 2px 6px;
+}
+
+.instructor-card__footer {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.instructor-card__cta {
+  font-size: 12px;
+  color: #4e89bd;
+  font-weight: 700;
+}
+
+.instructor-card__calendly-badge {
+  font-size: 11px;
+  font-weight: 700;
+  color: white;
+  background: linear-gradient(135deg, #3d6e98, #4e89bd);
+  padding: 2px 8px;
+  border-radius: 20px;
+  margin-left: auto;
 }

@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import {
   Bell, CheckCheck, Trash2, FileText, Video,
-  CheckCircle2, XCircle, Star, Plus,
+  CheckCircle2, XCircle, Star, Plus, Search,
 } from 'lucide-react'
 import Swal from 'sweetalert2'
 import { useForm } from 'react-hook-form'
@@ -13,6 +13,8 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { SpinnerOverlay } from '@/components/ui/spinner'
 import FormModal from '@/components/common/FormModal'
+import { useTablePage } from '@/hooks/useTablePage'
+import { Pagination } from '@/components/ui/pagination'
 
 const NOTIFICATION_TYPES = [
   'application_update', 'interview_scheduled', 'offer_received',
@@ -20,20 +22,20 @@ const NOTIFICATION_TYPES = [
 ]
 
 const TYPE_META = {
-  application_update: { label: 'Application Update', Icon: FileText,      bg: '#EFF6FF', color: '#4E89BD' },
-  interview_scheduled:{ label: 'Interview Scheduled', Icon: Video,         bg: '#FFFBEB', color: '#D97706' },
-  offer_received:     { label: 'Offer Received',      Icon: CheckCircle2,  bg: '#F0FDF4', color: '#16A34A' },
-  hired:              { label: 'Hired',                Icon: Star,          bg: '#F0FDF4', color: '#16A34A' },
-  rejected:           { label: 'Rejected',             Icon: XCircle,       bg: '#FFF1F2', color: '#E06C75' },
-  general:            { label: 'General',              Icon: Bell,          bg: '#F8FAFC', color: '#64748B' },
+  application_update:  { label: 'Application Update',  Icon: FileText,     bg: '#EFF6FF', color: '#4E89BD' },
+  interview_scheduled: { label: 'Interview Scheduled',  Icon: Video,        bg: '#FFFBEB', color: '#D97706' },
+  offer_received:      { label: 'Offer Received',       Icon: CheckCircle2, bg: '#F0FDF4', color: '#16A34A' },
+  hired:               { label: 'Hired',                Icon: Star,         bg: '#F0FDF4', color: '#16A34A' },
+  rejected:            { label: 'Rejected',             Icon: XCircle,      bg: '#FFF1F2', color: '#E06C75' },
+  general:             { label: 'General',              Icon: Bell,         bg: '#F8FAFC', color: '#64748B' },
 }
 
 function timeAgo(dateStr) {
   if (!dateStr) return ''
   const diff = (Date.now() - new Date(dateStr)) / 1000
-  if (diff < 60)   return 'just now'
-  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`
-  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`
+  if (diff < 60)     return 'just now'
+  if (diff < 3600)   return `${Math.floor(diff / 60)}m ago`
+  if (diff < 86400)  return `${Math.floor(diff / 3600)}h ago`
   if (diff < 604800) return `${Math.floor(diff / 86400)}d ago`
   return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 }
@@ -50,7 +52,6 @@ function NotifCard({ notif, isPrivileged, onMarkRead, onDelete }) {
       borderBottom: '1px solid var(--border)',
       transition: 'background 0.2s',
     }}>
-      {/* Icon bubble */}
       <div style={{
         width: '42px', height: '42px', borderRadius: '50%', flexShrink: 0,
         background: meta.bg, display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -58,7 +59,6 @@ function NotifCard({ notif, isPrivileged, onMarkRead, onDelete }) {
         <Icon size={18} strokeWidth={2} style={{ color: meta.color }} />
       </div>
 
-      {/* Body */}
       <div style={{ flex: 1, minWidth: 0 }}>
         {isPrivileged && notif.applicant_name && (
           <p style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '2px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
@@ -78,16 +78,12 @@ function NotifCard({ notif, isPrivileged, onMarkRead, onDelete }) {
           {!notif.is_read && (
             <>
               <span style={{ fontSize: '11px', color: 'var(--text-light)' }}>·</span>
-              <span style={{
-                width: '8px', height: '8px', borderRadius: '50%',
-                background: '#4E89BD', flexShrink: 0,
-              }} />
+              <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#4E89BD', flexShrink: 0 }} />
             </>
           )}
         </div>
       </div>
 
-      {/* Actions */}
       <div style={{ display: 'flex', gap: '4px', flexShrink: 0 }}>
         {!notif.is_read && (
           <button
@@ -113,12 +109,13 @@ function NotifCard({ notif, isPrivileged, onMarkRead, onDelete }) {
 export default function NotificationsPage() {
   const { user } = useAuth()
   const [notifications, setNotifications] = useState([])
-  const [applicants, setApplicants]   = useState([])
-  const [loading, setLoading]         = useState(true)
-  const [saving, setSaving]           = useState(false)
-  const [modalOpen, setModalOpen]     = useState(false)
+  const [applicants, setApplicants] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  const [modalOpen, setModalOpen] = useState(false)
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm()
+  const { search, setSearch, filters, setFilter, page, setPage, paginate } = useTablePage()
 
   const groups = user?.groups ?? []
   const isPrivileged = user?.is_staff || groups.includes('Hub Admin') || groups.includes('Staff')
@@ -139,6 +136,23 @@ export default function NotificationsPage() {
   }
 
   useEffect(() => { fetchData() }, [])
+
+  const filtered = useMemo(() => {
+    let list = notifications
+    if (search) {
+      const q = search.toLowerCase()
+      list = list.filter(n =>
+        n.title?.toLowerCase().includes(q) ||
+        n.message?.toLowerCase().includes(q)
+      )
+    }
+    if (filters.type) list = list.filter(n => n.notification_type === filters.type)
+    if (filters.read === 'unread') list = list.filter(n => !n.is_read)
+    if (filters.read === 'read')   list = list.filter(n => n.is_read)
+    return list
+  }, [notifications, search, filters])
+
+  const { rows, totalPages, totalRows } = paginate(filtered)
 
   const handleMarkRead = async (notif) => {
     try {
@@ -204,9 +218,7 @@ export default function NotificationsPage() {
           </div>
           <div>
             <h2 className="page-title">Notifications</h2>
-            <p className="page-subtitle">
-              {notifications.length} total · {unread} unread
-            </p>
+            <p className="page-subtitle">{notifications.length} total · {unread} unread</p>
           </div>
         </div>
         <div style={{ display: 'flex', gap: '8px' }}>
@@ -223,7 +235,37 @@ export default function NotificationsPage() {
         </div>
       </div>
 
-      {/* Feed */}
+      <div className="table-filters">
+        <div className="table-filters__search">
+          <Search size={15} className="table-filters__search-icon" />
+          <input
+            className="table-filters__search-input"
+            placeholder="Search by title or message…"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+          />
+        </div>
+        <select
+          className="table-filters__select"
+          value={filters.type || ''}
+          onChange={e => setFilter('type', e.target.value)}
+        >
+          <option value="">All Types</option>
+          {NOTIFICATION_TYPES.map(t => (
+            <option key={t} value={t}>{TYPE_META[t]?.label || t}</option>
+          ))}
+        </select>
+        <select
+          className="table-filters__select"
+          value={filters.read || ''}
+          onChange={e => setFilter('read', e.target.value)}
+        >
+          <option value="">All</option>
+          <option value="unread">Unread</option>
+          <option value="read">Read</option>
+        </select>
+      </div>
+
       <div style={{
         borderRadius: 'var(--radius-lg)', border: '1px solid var(--border)',
         background: 'white', overflow: 'hidden',
@@ -231,14 +273,20 @@ export default function NotificationsPage() {
       }}>
         {loading ? (
           <div style={{ position: 'relative', height: '200px' }}><SpinnerOverlay /></div>
-        ) : notifications.length === 0 ? (
+        ) : rows.length === 0 ? (
           <div className="empty-state" style={{ padding: '60px 20px' }}>
             <Bell strokeWidth={1.5} />
-            <p className="empty-state-title">No notifications yet</p>
-            <p className="empty-state-desc">You'll be notified when your application status changes.</p>
+            <p className="empty-state-title">
+              {notifications.length === 0 ? 'No notifications yet' : 'No notifications match your filter'}
+            </p>
+            <p className="empty-state-desc">
+              {notifications.length === 0
+                ? "You'll be notified when your application status changes."
+                : 'Try adjusting your search or filter.'}
+            </p>
           </div>
         ) : (
-          notifications.map(notif => (
+          rows.map(notif => (
             <NotifCard
               key={notif.id}
               notif={notif}
@@ -250,7 +298,8 @@ export default function NotificationsPage() {
         )}
       </div>
 
-      {/* Send notification modal — privileged only */}
+      <Pagination page={page} totalPages={totalPages} totalRows={totalRows} onPageChange={setPage} />
+
       {isPrivileged && (
         <FormModal
           open={modalOpen}

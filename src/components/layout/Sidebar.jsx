@@ -23,39 +23,39 @@ import Swal from 'sweetalert2'
  *   regardless of audience.
  */
 const NAV_ITEMS = [
-  // ── always ───────────────────────────────────────────────────────
+  //  always 
   { label: 'Dashboard',  to: '/dashboard', Icon: LayoutDashboard, section: null, audience: 'all' },
 
-  // ── HR Management ─────────────────────────────────────────────
+  //  HR Management 
   { label: 'Employees',  to: '/employees',  Icon: Users,     section: 'HR Management', permission: 'app.view_employee',  audience: 'staff' },
   { label: 'Positions',  to: '/positions',  Icon: Briefcase, section: 'HR Management', permission: 'app.view_position',  audience: 'staff' },
 
-  // ── Recruitment ───────────────────────────────────────────────
+  //  Recruitment 
   { label: 'Jobs',             to: '/jobs',             Icon: ClipboardList, section: 'Recruitment', permission: 'app.view_job',             audience: 'staff' },
   { label: 'Students',         to: '/applicants',       Icon: UserSearch,    section: 'Recruitment', permission: 'app.view_applicant',        audience: 'staff' },
   { label: 'Job Applications', to: '/job-applications', Icon: FileText,      section: 'Recruitment', permission: 'app.change_jobapplication',  audience: 'staff' },
   { label: 'Interviews',       to: '/interviews',       Icon: Video,         section: 'Recruitment', permission: 'app.view_interview',        audience: 'staff' },
 
-  // ── Data ──────────────────────────────────────────────────────
+  //  Data 
   { label: 'Skills Catalog', to: '/skills',        Icon: Zap,           section: 'Data', permission: 'app.view_skill',        audience: 'staff' },
   { label: 'Education',      to: '/education',     Icon: GraduationCap, section: 'Data', permission: 'app.view_education',    audience: 'staff' },
   { label: 'Notifications',  to: '/notifications', Icon: Bell,          section: 'Data', permission: 'app.view_notification', audience: 'staff' },
 
-  // ── Community (staff + instructors) ──────────────────────────
+  //  Community (staff + instructors)
   { label: 'Student Spotlights', to: '/community/spotlights', Icon: Star,      section: 'Community', permission: 'app.view_studentspotlight', audience: 'staff_instructor' },
 
-  // ── Instructor personal ───────────────────────────────────────
+  //  Instructor personal
   { label: 'My Profile', to: '/profile', Icon: CircleUser, section: null, audience: 'instructor' },
 
-  // ── TA portal ─────────────────────────────────────────────────
+  //  TA portal 
   { label: 'My Logs',    to: '/ta/logs', Icon: Clock,      section: 'TA Portal', audience: 'ta', permission: 'app.add_tahourslog' },
   { label: 'My Profile', to: '/profile', Icon: CircleUser, section: null,        audience: 'ta' },
 
-  // ── Student portal ────────────────────────────────────────────
+  //  Student portal 
   { label: 'CodeX Hub',       to: '/codexhub/students',   Icon: GraduationCap, section: null, audience: 'student' },
   { label: 'My Profile',      to: '/profile',              Icon: CircleUser,    section: null, audience: 'student' },
   { label: 'Jobs',            to: '/codexhub/jobs',        Icon: ClipboardList, section: null, audience: 'student', permission: 'app.view_job' },
-  { label: 'My Applications', to: '/job-applications',     Icon: FileText,      section: null, audience: 'student', permission: 'app.view_jobapplication' },
+  { label: 'My Applications', to: '/codexhub/applications', Icon: FileText,      section: null, audience: 'student', permission: 'app.view_jobapplication' },
   { label: 'Instructors',     to: '/codexhub/instructors', Icon: Star,          section: null, audience: 'student' },
   { label: 'Notifications',   to: '/notifications',        Icon: Bell,          section: null, audience: 'student', permission: 'app.view_notification' },
 ]
@@ -126,7 +126,7 @@ export default function Sidebar({ onClose }) {
   return (
     <aside className="sidebar">
       <div className="sidebar-logo">
-        <div className="sidebar-logo-badge">HR</div>
+        <img src="/codeX-logo.png" alt="CodeX" className="sidebar-logo-img" />
         <span className="sidebar-logo-name">
           CodeX Hub
           <span className="sidebar-logo-dot" />
