@@ -178,6 +178,9 @@ export default function CommunityPage() {
   const [spotlights, setSpotlights] = useState([])
   const [loading, setLoading] = useState(true)
   const [showCreate, setShowCreate] = useState(false)
+  const [openComments, setOpenComments] = useState({})
+  const [commentDraft, setCommentDraft] = useState({})
+  const [submittingComment, setSubmittingComment] = useState({})
 
   useEffect(() => {
     postService.getAll({ ordering: '-created_at' })
@@ -197,6 +200,32 @@ export default function CommunityPage() {
         : p
       ))
     } catch {}
+  }
+
+  const handleToggleComments = (postId) => {
+    setOpenComments(prev => ({ ...prev, [postId]: !prev[postId] }))
+  }
+
+  const handleAddComment = async (postId) => {
+    const content = (commentDraft[postId] || '').trim()
+    if (!content) return
+    setSubmittingComment(prev => ({ ...prev, [postId]: true }))
+    try {
+      const res = await postService.addComment(postId, { post: postId, content })
+      const newComment = res.data
+      setPosts(prev => prev.map(p => p.id === postId
+        ? {
+            ...p,
+            comments: [...(p.comments || []), newComment],
+            comment_count: (p.comment_count || 0) + 1,
+          }
+        : p
+      ))
+      setCommentDraft(prev => ({ ...prev, [postId]: '' }))
+    } catch {
+      Swal.fire('Error', 'Could not post comment.', 'error')
+    }
+    setSubmittingComment(prev => ({ ...prev, [postId]: false }))
   }
 
   const handleDelete = async (postId) => {
@@ -245,6 +274,9 @@ export default function CommunityPage() {
           {posts.map(post => {
             const badge = POST_TYPE_BADGE[post.post_type] || POST_TYPE_BADGE.general
             const authorInitials = (post.author_initials || post.author_name?.[0] || '?').toUpperCase()
+            const showComments = !!openComments[post.id]
+            const comments = post.comments || []
+
             return (
               <Card key={post.id} style={{ overflow: 'hidden' }}>
                 <CardContent style={{ padding: 0 }}>
@@ -283,6 +315,7 @@ export default function CommunityPage() {
                     }} />
                   )}
 
+                  {/* Actions bar */}
                   <div style={{ padding: '10px 16px', display: 'flex', alignItems: 'center', gap: '16px', borderTop: post.image_url ? 'none' : '1px solid #F8FAFC' }}>
                     <button onClick={() => handleToggleLike(post.id)} style={{
                       display: 'flex', alignItems: 'center', gap: '5px',
@@ -293,11 +326,76 @@ export default function CommunityPage() {
                       <Heart size={15} fill={post.liked_by_me ? '#E06C75' : 'none'} />
                       {post.like_count > 0 && post.like_count}
                     </button>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '13px', color: '#94A3B8', fontWeight: 600 }}>
+                    <button onClick={() => handleToggleComments(post.id)} style={{
+                      display: 'flex', alignItems: 'center', gap: '5px',
+                      background: 'none', border: 'none', cursor: 'pointer',
+                      fontSize: '13px', fontWeight: 600,
+                      color: showComments ? '#4E89BD' : '#94A3B8',
+                    }}>
                       <MessageCircle size={15} />
                       {post.comment_count > 0 && post.comment_count}
-                    </span>
+                    </button>
                   </div>
+
+                  {/* Comments section */}
+                  {showComments && (
+                    <div style={{ borderTop: '1px solid #F1F5F9', padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                      {comments.length === 0 && (
+                        <p style={{ fontSize: '13px', color: '#94A3B8', textAlign: 'center' }}>No comments yet. Be the first!</p>
+                      )}
+                      {comments.map(c => {
+                        const initials = (c.author_initials || c.author_name?.[0] || '?').toUpperCase()
+                        return (
+                          <div key={c.id} style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
+                            <div style={{
+                              width: '30px', height: '30px', borderRadius: '50%', flexShrink: 0,
+                              background: 'linear-gradient(135deg, #7C3AED, #6D28D9)',
+                              display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              fontSize: '11px', fontWeight: 800, color: 'white',
+                            }}>{initials}</div>
+                            <div style={{ flex: 1, background: '#F8FAFC', borderRadius: '10px', padding: '8px 12px' }}>
+                              <p style={{ fontSize: '12px', fontWeight: 700, color: '#1E293B', marginBottom: '2px' }}>{c.author_name}</p>
+                              <p style={{ fontSize: '13px', color: '#475569', lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>{c.content}</p>
+                              <p style={{ fontSize: '11px', color: '#CBD5E1', marginTop: '4px' }}>{timeAgo(c.created_at)}</p>
+                            </div>
+                          </div>
+                        )
+                      })}
+
+                      {/* New comment input */}
+                      <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-end', marginTop: '4px' }}>
+                        <textarea
+                          value={commentDraft[post.id] || ''}
+                          onChange={e => setCommentDraft(prev => ({ ...prev, [post.id]: e.target.value }))}
+                          onKeyDown={e => {
+                            if (e.key === 'Enter' && !e.shiftKey) {
+                              e.preventDefault()
+                              handleAddComment(post.id)
+                            }
+                          }}
+                          placeholder="Write a comment… (Enter to send)"
+                          rows={1}
+                          style={{
+                            flex: 1, border: '1px solid #E2E8F0', borderRadius: '20px',
+                            padding: '8px 14px', fontSize: '13px', resize: 'none',
+                            outline: 'none', fontFamily: 'inherit', lineHeight: 1.4,
+                          }}
+                        />
+                        <button
+                          onClick={() => handleAddComment(post.id)}
+                          disabled={submittingComment[post.id] || !(commentDraft[post.id] || '').trim()}
+                          style={{
+                            background: '#4E89BD', color: 'white', border: 'none',
+                            borderRadius: '20px', padding: '8px 16px',
+                            fontSize: '13px', fontWeight: 600, cursor: 'pointer',
+                            opacity: (submittingComment[post.id] || !(commentDraft[post.id] || '').trim()) ? 0.5 : 1,
+                          }}
+                        >
+                          {submittingComment[post.id] ? '…' : 'Send'}
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             )

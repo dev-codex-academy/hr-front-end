@@ -633,6 +633,11 @@
   }
 }
 
+/* ── Mobile footer nav (hidden on desktop) ── */
+.students-mobile-footer {
+  display: none;
+}
+
 @media (max-width: 700px) {
   .students-page-shell {
     padding: 0 14px;
@@ -659,8 +664,15 @@
     padding-right: 64px;
   }
 
+  /* Hide sidebars on mobile */
+  .students-panel--notifications,
+  .students-panel--actions {
+    display: none;
+  }
+
+  /* Extra bottom padding so feed content doesn't hide under the footer */
   .students-page-body {
-    padding: 0 0 34px;
+    padding: 0 0 calc(72px + env(safe-area-inset-bottom, 0px));
   }
 
   .students-page-grid {
@@ -679,5 +691,75 @@
   .students-post-card__comments {
     padding-left: 16px;
     padding-right: 16px;
+  }
+
+  /* Show mobile footer */
+  .students-mobile-footer {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: calc(60px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    background: rgba(255, 255, 255, 0.96);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-top: 1px solid rgba(226, 232, 240, 0.9);
+    box-shadow: 0 -4px 20px rgba(15, 23, 42, 0.08);
+    z-index: 15;
+  }
+
+  .students-mobile-footer__link {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .students-mobile-footer__item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+  }
+
+  .students-mobile-footer__icon-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .students-mobile-footer__badge {
+    position: absolute;
+    top: -5px;
+    right: -8px;
+    min-width: 16px;
+    height: 16px;
+    padding: 0 4px;
+    border-radius: 999px;
+    background: #E06C75;
+    color: #fff;
+    font-size: 9px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+  }
+
+  .students-mobile-footer__label {
+    font-size: 9px;
+    font-weight: 700;
+    color: #64748B;
+    letter-spacing: 0.02em;
+  }
+
+  .students-mobile-footer__link:active .students-mobile-footer__icon-wrap {
+    transform: scale(0.9);
+    transition: transform 0.1s ease;
   }
 }
