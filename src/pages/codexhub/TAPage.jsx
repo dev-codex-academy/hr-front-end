@@ -137,9 +137,7 @@ function PostCard({ post, onToggleLike }) {
 }
 
 const QUICK_ITEMS = [
-  { label: 'Log Class Hours',  desc: 'Record class session',   Icon: Clock,         color: '#4E89BD', bg: '#EFF6FF', to: '/ta/logs' },
-  { label: 'Log Task Review',  desc: 'Record task review',     Icon: BookCheck,     color: '#3d6e98', bg: '#EFF6FF', to: '/ta/logs' },
-  { label: 'New Mentorship',   desc: 'Log a mentorship',       Icon: Users,         color: '#E06C75', bg: '#FFF0F1', to: '/ta/logs' },
+ 
   { label: 'My Reports',       desc: 'Hours & mentorship log', Icon: BarChart2,     color: '#AD545B', bg: '#FFF0F1', to: '/ta/logs' },
   { label: 'My Profile',       desc: 'Your employee card',     Icon: CircleUser,    color: '#4E89BD', bg: '#EFF6FF', to: '/profile' },
   { label: 'My Courses',       desc: 'Teaching platform',      Icon: GraduationCap, color: '#F97316', bg: '#FFF7ED', href: 'https://moodle.mycodexacademy.com/login/index.php?lang=en_us', external: true },
